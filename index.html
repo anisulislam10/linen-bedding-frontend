@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMINA | Modern Luxury Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a1a1a;
+      --accent: #4f46e5;
+      --bg: #ffffff;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: #000000;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Luxury Blade Expansion */
+    .hero-blade {
+      transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+      flex: 1;
+      position: relative;
+    }
+    .hero-blade:hover {
+      flex: 2.5;
+    }
+
+    /* Glassmorphism Header */
+    .glass-header {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Smooth Hover Image Pan */
+    @keyframes slowPan {
+      0% { transform: scale(1.1) translateX(0); }
+      50% { transform: scale(1.15) translateX(-2%); }
+      100% { transform: scale(1.1) translateX(0); }
+    }
+    .animate-pan {
+      animation: slowPan 30s ease-in-out infinite;
+    }
+
+    /* Scrollbar Styling */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Luxury Card Shadows */
+    .shadow-luxury {
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .shadow-luxury:hover {
+      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.1);
+      transform: translateY(-5px);
+    }
+    
+    ::selection { background: #000; color: #fff; }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
