@@ -1,64 +1,198 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CartItem, Product } from '../types';
+import { cartService } from '../services/cartService';
+import { useAuth } from './AuthContext';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number) => Promise<void>;
+  removeFromCart: (itemId: string) => Promise<void>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   clearCart: () => void;
   totalItems: number;
   subtotal: number;
   tax: number;
   shipping: number;
   total: number;
+  loading: boolean;
+  error: string | null;
+  syncCart: () => Promise<void>;
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoggedIn } = useAuth();
   const [cart, setCart] = useState<CartItem[]>(() => {
+    // Load from localStorage for guest users
     const saved = localStorage.getItem('cart');
     return saved ? JSON.parse(saved) : [];
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
+
+  // Sync cart with backend when user logs in
+  const syncCart = useCallback(async () => {
+    if (!isLoggedIn) return;
+
+    try {
+      setLoading(true);
+      const backendCart = await cartService.getCart();
+      const formattedCart: CartItem[] = backendCart.items.map(item => ({
+        _id: item._id,
+        product: item.product,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+      setCart(formattedCart);
+      localStorage.removeItem('cart'); // Clear guest cart
+    } catch (err: any) {
+      console.error('Failed to sync cart:', err);
+      setError(err.response?.data?.message || 'Failed to load cart');
+    } finally {
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
+
+  // Sync cart when user logs in
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    if (isLoggedIn) {
+      syncCart();
+    }
+  }, [isLoggedIn, syncCart]);
 
-  const addToCart = useCallback((product: Product, quantity: number = 1) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => 
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+  // Save to localStorage for guest users
+  useEffect(() => {
+    if (!isLoggedIn) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+  }, [cart, isLoggedIn]);
+
+  const addToCart = useCallback(async (product: Product, quantity: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (isLoggedIn) {
+        // Add to backend
+        const backendCart = await cartService.addToCart(product._id, quantity);
+        const formattedCart: CartItem[] = backendCart.items.map(item => ({
+          _id: item._id,
+          product: item.product,
+          quantity: item.quantity,
+          price: item.price,
+        }));
+        setCart(formattedCart);
+      } else {
+        // Add to local storage
+        setCart(prev => {
+          const existing = prev.find(item =>
+            (item.product._id || item.product.id) === (product._id || product.id)
+          );
+          if (existing) {
+            return prev.map(item =>
+              (item.product._id || item.product.id) === (product._id || product.id)
+                ? { ...item, quantity: item.quantity + quantity }
+                : item
+            );
+          }
+          return [...prev, { product, quantity, price: product.price }];
+        });
       }
-      return [...prev, { ...product, quantity }];
-    });
-  }, []);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Failed to add to cart';
+      setError(msg);
+      alert(msg);
+      throw err;
+    } finally {
+      setLoading(false);
+      openCart();
+    }
+  }, [isLoggedIn, openCart]);
 
-  const removeFromCart = useCallback((productId: string) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
-  }, []);
+  const removeFromCart = useCallback(async (itemId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+      if (isLoggedIn) {
+        const backendCart = await cartService.removeFromCart(itemId);
+        const formattedCart: CartItem[] = backendCart.items.map(item => ({
+          _id: item._id,
+          product: item.product,
+          quantity: item.quantity,
+          price: item.price,
+        }));
+        setCart(formattedCart);
+      } else {
+        setCart(prev => prev.filter(item =>
+          (item._id || (item.product._id || item.product.id)) !== itemId
+        ));
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to remove from cart');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
+
+  const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      await removeFromCart(itemId);
       return;
     }
-    setCart(prev => 
-      prev.map(item => item.id === productId ? { ...item, quantity } : item)
-    );
-  }, [removeFromCart]);
 
-  const clearCart = useCallback(() => setCart([]), []);
+    try {
+      setLoading(true);
+      setError(null);
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+      if (isLoggedIn) {
+        const backendCart = await cartService.updateCartItem(itemId, quantity);
+        const formattedCart: CartItem[] = backendCart.items.map(item => ({
+          _id: item._id,
+          product: item.product,
+          quantity: item.quantity,
+          price: item.price,
+        }));
+        setCart(formattedCart);
+      } else {
+        setCart(prev =>
+          prev.map(item =>
+            (item._id || (item.product._id || item.product.id)) === itemId
+              ? { ...item, quantity }
+              : item
+          )
+        );
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update quantity');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [isLoggedIn, removeFromCart]);
+
+  const clearCart = useCallback(() => {
+    setCart([]);
+    localStorage.removeItem('cart');
+  }, []);
+
+  // Calculate totals
+  const subtotal = cart.reduce((acc, item) => {
+    if (!item.product) return acc;
+    const price = item.product.price || item.price || 0;
+    return acc + price * item.quantity;
+  }, 0);
+  const totalItems = cart.reduce((acc, item) => acc + (item.product ? item.quantity : 0), 0);
   const tax = subtotal * 0.1;
   const shipping = subtotal > 100 || subtotal === 0 ? 0 : 15;
   const total = subtotal + tax + shipping;
@@ -66,7 +200,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <CartContext.Provider value={{
       cart, addToCart, removeFromCart, updateQuantity, clearCart,
-      totalItems, subtotal, tax, shipping, total
+      totalItems, subtotal, tax, shipping, total,
+      loading, error, syncCart,
+      isOpen, openCart, closeCart
     }}>
       {children}
     </CartContext.Provider>

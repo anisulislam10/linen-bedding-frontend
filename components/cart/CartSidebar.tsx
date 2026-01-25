@@ -11,9 +11,9 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
 
   return (
     <>
-      <div 
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-opacity" 
-        onClick={onClose} 
+      <div
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-opacity"
+        onClick={onClose}
       />
       <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[60] flex flex-col transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -39,36 +39,45 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
             </div>
           ) : (
             <div className="space-y-6">
-              {cart.map((item) => (
-                <div key={item.id} className="flex space-x-4">
-                  <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-between py-1">
-                    <div>
-                      <h4 className="font-bold text-gray-900 line-clamp-1 uppercase text-xs tracking-tight">{item.name}</h4>
-                      <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
+              {cart.map((item) => {
+                if (!item.product) return null;
+                const itemId = item._id || item.product._id || (item.product as any).id;
+                const productName = item.product.name;
+                const productPrice = item.product.price || item.price;
+                const productImage = item.product.images?.[0]?.url || item.product.image;
+
+                return (
+                  <div key={itemId} className="flex space-x-4">
+                    <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                      <img src={productImage} alt={productName} className="w-full h-full object-cover" />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center border border-gray-100 rounded-lg">
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="px-2 py-0.5 hover:bg-gray-50 text-gray-400"
-                        >-</button>
-                        <span className="px-2 text-xs font-bold text-gray-700">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="px-2 py-0.5 hover:bg-gray-50 text-gray-400"
-                        >+</button>
+                    <div className="flex-1 flex flex-col justify-between py-1">
+                      <div>
+                        <h4 className="font-bold text-gray-900 line-clamp-1 uppercase text-xs tracking-tight">{productName}</h4>
+                        <p className="text-sm text-gray-500">${productPrice.toFixed(2)}</p>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center border border-gray-100 rounded-lg">
+                          <button
+                            onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                            className="px-2 py-0.5 hover:bg-gray-50 text-gray-400"
+                          >-</button>
+                          <span className="px-2 text-xs font-bold text-gray-700">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                            className="px-2 py-0.5 hover:bg-gray-50 text-gray-400"
+                          >+</button>
+                        </div>
+                        <button onClick={() => removeFromCart(itemId)} className="text-red-400 hover:text-red-600 transition-colors">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
           )}
         </div>
 
@@ -78,8 +87,8 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
               <span className="font-medium text-gray-500 text-sm uppercase tracking-widest">Subtotal</span>
               <span className="text-xl font-black">${subtotal.toFixed(2)}</span>
             </div>
-            <Link 
-              to="/checkout" 
+            <Link
+              to="/checkout"
               onClick={onClose}
               className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 uppercase text-xs tracking-widest"
             >

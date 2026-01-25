@@ -1,9 +1,17 @@
-
-import React, { useMemo } from 'react';
-// Added Link to imports from react-router-dom
+import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import ProductCard from '../components/common/ProductCard';
-import { PRODUCTS } from '../constants';
+import { Product } from '../types';
+import { productService } from '../services/productService';
+
+const normalizeProduct = (product: Product): Product => ({
+  ...product,
+  id: product._id,
+  image: product.images?.[0]?.url || product.image || '',
+  secondaryImage: product.images?.[1]?.url || product.secondaryImage || '',
+  reviewsCount: product.numOfReviews || 0,
+  category: typeof product.category === 'string' ? product.category : product.category?.name || 'All',
+});
 
 const ProductListing: React.FC = () => {
   const location = useLocation();
@@ -11,16 +19,54 @@ const ProductListing: React.FC = () => {
   const initialCategory = searchParams.get('category') || 'All';
   const initialQuery = searchParams.get('q') || '';
 
-  const filteredProducts = useMemo(() => {
-    let result = PRODUCTS;
-    if (initialCategory !== 'All') {
-      result = result.filter(p => p.category === initialCategory);
-    }
-    if (initialQuery) {
-      result = result.filter(p => p.name.toLowerCase().includes(initialQuery.toLowerCase()));
-    }
-    return result;
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const params: any = {
+          limit: 100
+        };
+        if (initialCategory !== 'All') {
+          params.category = initialCategory;
+        }
+        if (initialQuery) {
+          params.search = initialQuery;
+        }
+
+        const response = await productService.getProducts(params);
+        setProducts(response.products);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, [initialCategory, initialQuery]);
+
+  const normalizedProducts = products.map(normalizeProduct);
+
+
+  if (loading) {
+    return (
+      <div className="bg-white min-h-screen pt-24 flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white min-h-screen pt-24 flex items-center justify-center">
+        <p className="text-xl text-red-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen pt-12">
@@ -33,11 +79,11 @@ const ProductListing: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="h-1 w-12 bg-black"></div>
               <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">
-                {filteredProducts.length} Results in Collective
+                {normalizedProducts.length} Results in Collective
               </p>
             </div>
           </div>
-          
+
           {initialQuery && (
             <div className="mt-8 md:mt-0 text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] bg-indigo-50 px-6 py-2 rounded-full">
               Query: {initialQuery}
@@ -46,13 +92,13 @@ const ProductListing: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-16">
-          {filteredProducts.length === 0 ? (
+          {normalizedProducts.length === 0 ? (
             <div className="col-span-full py-40 text-center">
               <p className="text-2xl font-black text-gray-200 uppercase tracking-[0.5em]">No entries found in ledger</p>
               <Link to="/products" className="mt-8 inline-block text-black font-black border-b-2 border-black pb-1">RESET INDEX</Link>
             </div>
           ) : (
-            filteredProducts.map(product => (
+            normalizedProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))
           )}
