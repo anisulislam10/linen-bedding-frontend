@@ -1,4 +1,4 @@
-# Comprehensive Project Documentation: Lumina E-Commerce
+# Comprehensive Project Documentation: Avenly by Huma E-Commerce
 
 A professional-grade, high-performance e-commerce ecosystem designed for premium brands. This document provides a deep dive into the technical architecture, technology stack, and exhaustive API landscape.
 

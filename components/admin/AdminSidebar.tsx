@@ -34,7 +34,7 @@ const AdminSidebar: React.FC = () => {
         <aside className="w-64 bg-slate-900 text-slate-300 h-screen sticky top-0 flex flex-col">
             <div className="p-6">
                 <h1 className="text-2xl font-black text-white tracking-tighter uppercase">
-                    Lumina<span className="text-indigo-500">.</span> Admin
+                    Avenly by Huma<span className="text-indigo-500">.</span> Admin
                 </h1>
             </div>
 

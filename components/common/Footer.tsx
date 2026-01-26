@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
           {/* Brand */}
           <div className="space-y-8">
             <Link to="/" className="text-2xl font-black tracking-tighter uppercase">
-              {siteSettings?.siteName?.replace('.', '') || 'Lumina'}<span className="text-indigo-600">.</span>
+              {siteSettings?.siteName?.replace('.', '') || 'Avenly by Huma'}<span className="text-indigo-600">.</span>
             </Link>
             <p className="text-gray-400 text-sm font-medium leading-[1.8] max-w-xs">
               {footer?.description || 'Curating premium essentials for your modern lifestyle. Quality meets aesthetic in every piece we offer.'}
@@ -110,7 +110,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-50 pt-12 flex flex-col md:flex-row justify-between items-center text-[10px] font-black text-gray-300 uppercase tracking-widest">
-          <p>{footer?.copyrightText || `© ${new Date().getFullYear()} Lumina Artifacts. Recorded Rights.`}</p>
+          <p>{footer?.copyrightText || `© ${new Date().getFullYear()} Avenly by Huma Artifacts. Recorded Rights.`}</p>
           <div className="flex space-x-8 mt-6 md:mt-0">
             <Link to="#" className="hover:text-black transition-colors">Privacy Lexicon</Link>
             <Link to="#" className="hover:text-black transition-colors">Terms of Service</Link>

@@ -49,7 +49,7 @@ const AdminLogin: React.FC = () => {
                         <ShieldCheck className="w-10 h-10 text-white" />
                     </div>
                     <h1 className="text-4xl font-black text-white tracking-tighter uppercase mb-2">
-                        Lumina<span className="text-indigo-500">.</span> Terminal
+                        Avenly by Huma<span className="text-indigo-500">.</span> Terminal
                     </h1>
                     <p className="text-slate-400 font-medium tracking-wide text-xs uppercase">
                         Authorized Personnel Access Only
@@ -74,7 +74,7 @@ const AdminLogin: React.FC = () => {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="admin@lumina.com"
+                                    placeholder="admin@Avenly by Huma.com"
                                     className="w-full bg-white/5 border border-white/10 focus:border-indigo-500/50 p-5 pl-14 rounded-2xl outline-none text-white text-sm transition-all placeholder:text-slate-600"
                                     required
                                 />

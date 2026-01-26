@@ -224,8 +224,8 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-t border-gray-100 pt-20">
-        <div className="flex space-x-12 mb-10 border-b border-gray-100">
+      <div className="border-t border-gray-100 pt-20 ">
+        <div className="flex space-x-8 mb-10 border-b border-gray-100">
           {['Description', 'Specifications', 'Reviews'].map(tab => (
             <button
               key={tab}

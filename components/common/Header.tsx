@@ -25,7 +25,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
 
   // New State for Features
   const [categories, setCategories] = useState<string[]>(['All']);
-  const [siteSettings, setSiteSettings] = useState<{ siteName: string; logoUrl: string }>({ siteName: 'Lumina.', logoUrl: '' });
+  const [siteSettings, setSiteSettings] = useState<{ siteName: string; logoUrl: string }>({ siteName: 'Avenly by Huma.', logoUrl: '' });
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [trackingOrderId, setTrackingOrderId] = useState('');
   const [trackingResult, setTrackingResult] = useState<Order | null>(null);
@@ -59,7 +59,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
         const content = await contentService.getContent('home_page');
         if (content && content.siteSettings) {
           setSiteSettings({
-            siteName: content.siteSettings.siteName || 'Lumina.',
+            siteName: content.siteSettings.siteName || 'Avenly by Huma.',
             logoUrl: content.siteSettings.logoUrl || ''
           });
           // Update document title and description if needed, or handle in a top-level component
@@ -315,7 +315,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
         <div className="flex flex-col h-full p-8">
           <div className="flex items-center justify-between mb-12">
             <Link to="/" className="text-xl font-black uppercase tracking-tighter">
-              Lumina<span className="text-indigo-600">.</span>
+              Avenly by Huma<span className="text-indigo-600">.</span>
             </Link>
             <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2">
               <X className="h-6 w-6 text-gray-400" />
