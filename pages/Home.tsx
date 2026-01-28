@@ -54,7 +54,7 @@ const HeroBlade: React.FC<{ category: string; index: number; products: Product[]
   const normalizedProduct = normalizeProduct(product);
 
   return (
-    <div className="hero-blade relative h-[60vh] xs:h-[65vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh] 2xl:h-[90vh] w-full flex-1 snap-center group overflow-hidden border-r border-white/10 last:border-0">
+    <div className="hero-blade relative h-[60vh] xs:h-[65vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh] 2xl:h-[90vh] w-full flex-1 min-w-full sm:min-w-0 snap-center group overflow-hidden border-r border-white/10 last:border-0">
       <div className="absolute inset-0">
         <img
           src={normalizedProduct.image}
@@ -249,20 +249,15 @@ const Home: React.FC = () => {
 
   return (
     <div className="bg-white">
-      {/* HERO SECTION */}
-      <section className="relative w-full flex flex-col xs:flex-row bg-black overflow-x-auto xs:snap-x xs:snap-mandatory no-scrollbar pt-16 xs:pt-0">
-        <div className="flex xs:hidden flex-col">
-          {heroCategories.map((cat, i) => (
-            <HeroBlade key={cat} category={cat} index={i} products={products} />
-          ))}
-        </div>
-        <div className="hidden xs:flex">
-          {heroCategories.map((cat, i) => (
-            <HeroBlade key={cat} category={cat} index={i} products={products} />
-          ))}
-        </div>
+      {/* HERO SECTION - FULLY RESPONSIVE ON ALL SCREENS */}
+      <section className="relative w-full flex flex-row bg-black overflow-x-auto snap-x snap-mandatory no-scrollbar pt-16 sm:pt-0">
+        {/* Always show hero blades horizontally on all screens */}
+        {heroCategories.map((cat, i) => (
+          <HeroBlade key={cat} category={cat} index={i} products={products} />
+        ))}
 
-        <div className="absolute bottom-4 xs:bottom-6 sm:bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 xs:gap-3 sm:gap-4 pointer-events-none hidden xs:flex">
+        {/* Scroll indicator - Hidden on mobile, shown on xs+ */}
+        <div className="absolute bottom-4 xs:bottom-6 sm:bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 xs:gap-3 sm:gap-4 pointer-events-none hidden sm:flex">
           <span className="text-[8px] xs:text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-[0.6em] xs:tracking-[0.7em] sm:tracking-[0.8em]">Explore Ledger</span>
           <div className="w-[1px] h-8 xs:h-10 sm:h-12 md:h-16 bg-gradient-to-b from-white/60 to-transparent animate-pulse"></div>
         </div>
