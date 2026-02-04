@@ -205,27 +205,67 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
           </div>
         </div>
 
-        {/* Search Overlay */}
+        {/* Search Modal - Google-like Professional Design */}
         {searchOpen && (
-          <div className="fixed inset-0 bg-sand/98 z-[110] flex items-center justify-center p-6 animate-fade-in">
-            <button
-              onClick={() => setSearchOpen(false)}
-              className="absolute top-8 right-8 p-4 hover:bg-stone rounded-full transition-all"
-            >
-              <X className="h-8 w-8 text-primary" />
-            </button>
-            <div className="w-full max-w-4xl text-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-sage mb-6 block">Search Collection</span>
-              <form onSubmit={handleSearch}>
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="What are you looking for?"
-                  className="w-full text-3xl md:text-5xl font-serif text-primary bg-transparent border-b-2 border-primary/10 pb-4 text-center focus:border-sage outline-none placeholder:text-primary/20 transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </form>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-start justify-center pt-20 px-4" onClick={() => setSearchOpen(false)}>
+            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300" onClick={(e) => e.stopPropagation()}>
+              {/* Search Header */}
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-medium text-gray-900">Search Products</h2>
+                  <button
+                    onClick={() => setSearchOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </button>
+                </div>
+
+                {/* Google-like Search Bar */}
+                <form onSubmit={handleSearch} className="relative">
+                  <div className="relative flex items-center">
+                    <Search className="absolute left-4 h-5 w-5 text-gray-400" />
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Search for products..."
+                      className="w-full pl-12 pr-4 py-4 text-base text-gray-900 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent transition-all placeholder:text-gray-400"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-4 p-1 hover:bg-gray-200 rounded-full transition-colors"
+                      >
+                        <X className="h-4 w-4 text-gray-500" />
+                      </button>
+                    )}
+                  </div>
+                  <button type="submit" className="sr-only">Search</button>
+                </form>
+              </div>
+
+              {/* Quick Links/Suggestions */}
+              <div className="p-6">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Popular Searches</p>
+                <div className="flex flex-wrap gap-2">
+                  {['Bedding', 'Towels', 'Organic Cotton', 'Linen Sheets'].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => {
+                        setSearchQuery(term);
+                        navigate(`/products?q=${encodeURIComponent(term)}`);
+                        setSearchOpen(false);
+                      }}
+                      className="px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-full transition-colors"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
