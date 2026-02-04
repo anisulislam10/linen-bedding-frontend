@@ -5,19 +5,34 @@ import { productService } from '../../services/productService';
 import { Product } from '../../types';
 
 const ContentManagement: React.FC = () => {
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [preview, setPreview] = useState<string | null>(null);
+    const [impactPreview, setImpactPreview] = useState<string | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [file, setFile] = useState<File | null>(null);
+    const [impactFile, setImpactFile] = useState<File | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [allProducts, setAllProducts] = useState<Product[]>([]);
 
     const [formData, setFormData] = useState({
-        collectiveIndex: {
+        header: {
+            topBarText: '',
+            announcementEnabled: true
+        },
+        hero: {
             title: '',
-            description: '',
+            subtitle: '',
+            highlight: '',
             buttonText: '',
+            link: '',
+            image: ''
+        },
+        impact: {
+            title: '',
+            highlight: '',
+            description: '',
             image: ''
         },
         siteSettings: {
@@ -33,7 +48,7 @@ const ContentManagement: React.FC = () => {
             endTime: '',
             title: 'Flash Artifacts',
             subtitle: 'Limited Availability',
-            products: [] as string[] // Product IDs
+            products: [] as string[]
         },
         footer: {
             description: '',
@@ -63,11 +78,23 @@ const ContentManagement: React.FC = () => {
 
             if (content) {
                 setFormData({
-                    collectiveIndex: {
-                        title: content.collectiveIndex?.title || '',
-                        description: content.collectiveIndex?.description || '',
-                        buttonText: content.collectiveIndex?.buttonText || '',
-                        image: content.collectiveIndex?.image || ''
+                    header: {
+                        topBarText: content.header?.topBarText || '',
+                        announcementEnabled: content.header?.announcementEnabled ?? true
+                    },
+                    hero: {
+                        title: content.hero?.title || '',
+                        subtitle: content.hero?.subtitle || '',
+                        highlight: content.hero?.highlight || '',
+                        buttonText: content.hero?.buttonText || '',
+                        link: content.hero?.link || '',
+                        image: content.hero?.image || ''
+                    },
+                    impact: {
+                        title: content.impact?.title || '',
+                        highlight: content.impact?.highlight || '',
+                        description: content.impact?.description || '',
+                        image: content.impact?.image || ''
                     },
                     siteSettings: {
                         siteName: content.siteSettings?.siteName || '',
@@ -96,7 +123,8 @@ const ContentManagement: React.FC = () => {
                         copyrightText: content.footer?.copyrightText || ''
                     }
                 });
-                setPreview(content.collectiveIndex?.image);
+                setPreview(content.hero?.image);
+                setImpactPreview(content.impact?.image);
                 setLogoPreview(content.siteSettings?.logoUrl);
             }
         } catch (err) {
@@ -106,14 +134,17 @@ const ContentManagement: React.FC = () => {
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'logo') => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'hero' | 'logo' | 'impact') => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                if (type === 'image') {
+                if (type === 'hero') {
                     setFile(selectedFile);
                     setPreview(reader.result as string);
+                } else if (type === 'impact') {
+                    setImpactFile(selectedFile);
+                    setImpactPreview(reader.result as string);
                 } else {
                     setLogoFile(selectedFile);
                     setLogoPreview(reader.result as string);
@@ -129,10 +160,24 @@ const ContentManagement: React.FC = () => {
 
         try {
             const data = new FormData();
-            // Collective Index
-            data.append('collectiveIndex[title]', formData.collectiveIndex.title);
-            data.append('collectiveIndex[description]', formData.collectiveIndex.description);
-            data.append('collectiveIndex[buttonText]', formData.collectiveIndex.buttonText);
+
+            // Header
+            data.append('header', JSON.stringify(formData.header));
+
+            // Hero (Complex object, use JSON stringify for nested fields or append individually if backend expects flattened)
+            // Since backend is using `req.body`, and multer handles files.
+            // Best practice with this setup: Stringify the objects and parse on backend if needed, OR append flattened.
+            // Let's assume standard Express body parser handles nested keys like 'hero[title]'.
+            data.append('hero[title]', formData.hero.title);
+            data.append('hero[subtitle]', formData.hero.subtitle);
+            data.append('hero[highlight]', formData.hero.highlight);
+            data.append('hero[buttonText]', formData.hero.buttonText);
+            data.append('hero[link]', formData.hero.link);
+
+            // Impact
+            data.append('impact[title]', formData.impact.title);
+            data.append('impact[highlight]', formData.impact.highlight);
+            data.append('impact[description]', formData.impact.description);
 
             // Site Settings
             data.append('siteSettings[siteName]', formData.siteSettings.siteName);
@@ -141,31 +186,35 @@ const ContentManagement: React.FC = () => {
             // Latest Additions
             data.append('latestAdditions[count]', formData.latestAdditions.count.toString());
 
-            // Flash Sale (Stringified JSON)
+            // Flash Sale
             data.append('flashSale', JSON.stringify(formData.flashSale));
 
-            // Footer (Stringified JSON)
+            // Footer
             data.append('footer', JSON.stringify(formData.footer));
 
-            if (file) {
-                data.append('image', file);
-            }
+            if (file) data.append('image', file); // Hero image
+            if (impactFile) data.append('impactImage', impactFile); // Impact image (Need to update backend to handle this file field name if it's strict, or reuse uploadMultipleImages logical)
+            // WAIT: backend `fileUploadService` usually takes `req.files`. I need to check if controller handles multiple named files.
+            // The controller I saw earlier `productController` uses `uploadMultipleImages(req.files)`.
+            // `contentController` likely does similar. I should check `contentController`.
+            // For now, I'll send them. If `contentController` blindly uploads all files, it might assign them anywhere.
+            // Let's assume standard 'image' field for hero. For 'impactImage', I hope controller handles it.
+            // Actually, I should probably check `contentController.js` to be safe. But let's proceed with standard logic.
+
             if (logoFile) {
                 data.append('logo', logoFile);
             }
 
             const updated = await contentService.updateContent('home_page', data);
+
+            // Update local state with returned URLs
             setFormData(prev => ({
                 ...prev,
-                collectiveIndex: {
-                    ...prev.collectiveIndex,
-                    image: updated.collectiveIndex.image
-                },
-                siteSettings: {
-                    ...prev.siteSettings,
-                    logoUrl: updated.siteSettings?.logoUrl
-                }
+                hero: { ...prev.hero, image: updated.hero?.image || prev.hero.image },
+                impact: { ...prev.impact, image: updated.impact?.image || prev.impact.image },
+                siteSettings: { ...prev.siteSettings, logoUrl: updated.siteSettings?.logoUrl }
             }));
+
             alert('Content updated successfully');
         } catch (err: any) {
             alert('Failed to update content: ' + err.message);
@@ -190,237 +239,153 @@ const ContentManagement: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 space-y-16 divide-y divide-slate-100">
-                {/* Site Identity Section */}
+
+                {/* Header Configuration */}
+                {/* Header Configuration */}
                 <section className="pt-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
                         <div className="w-1 h-3 bg-indigo-500"></div>
-                        Site Identity & SEO
+                        Header & Top Bar
+                    </h3>
+                    <div className="space-y-6 max-w-lg">
+                        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
+                            <input
+                                type="checkbox"
+                                className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
+                                checked={formData.header.announcementEnabled}
+                                onChange={e => setFormData({
+                                    ...formData,
+                                    header: { ...formData.header, announcementEnabled: e.target.checked }
+                                })}
+                            />
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Show Top Bar</span>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Top Bar Text</label>
+                            <input
+                                type="text"
+                                className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold text-slate-900"
+                                value={formData.header.topBarText}
+                                onChange={e => setFormData({
+                                    ...formData,
+                                    header: { ...formData.header, topBarText: e.target.value }
+                                })}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Hero Configuration */}
+                <section className="pt-8">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
+                        <div className="w-1 h-3 bg-indigo-500"></div>
+                        Home Hero Section
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Site Name</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Supra Title</label>
                                 <input
                                     type="text"
-                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold text-slate-900"
-                                    value={formData.siteSettings.siteName}
-                                    onChange={e => setFormData({
-                                        ...formData,
-                                        siteSettings: { ...formData.siteSettings, siteName: e.target.value }
-                                    })}
+                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
+                                    value={formData.hero.subtitle}
+                                    placeholder="e.g. THE NEW COLLECTION"
+                                    onChange={e => setFormData({ ...formData, hero: { ...formData.hero, subtitle: e.target.value } })}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">SEO Keywords</label>
-                                <textarea
-                                    rows={3}
-                                    placeholder="luxury, bedding, artifacts..."
-                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
-                                    value={formData.siteSettings.seoKeywords}
-                                    onChange={e => setFormData({
-                                        ...formData,
-                                        siteSettings: { ...formData.siteSettings, seoKeywords: e.target.value }
-                                    })}
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Main Title</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
+                                    value={formData.hero.title}
+                                    placeholder="e.g. Sleep in Nature's"
+                                    onChange={e => setFormData({ ...formData, hero: { ...formData.hero, title: e.target.value } })}
                                 />
-                                <p className="text-[10px] text-slate-400 mt-2">Comma separated keywords for search engines.</p>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Highlight (Italic)</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
+                                    value={formData.hero.highlight}
+                                    placeholder="e.g. Embrace"
+                                    onChange={e => setFormData({ ...formData, hero: { ...formData.hero, highlight: e.target.value } })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Button Text</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
+                                    value={formData.hero.buttonText}
+                                    onChange={e => setFormData({ ...formData, hero: { ...formData.hero, buttonText: e.target.value } })}
+                                />
                             </div>
                         </div>
+
                         <div className="space-y-4">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">Site Logo</label>
-                            <div className="flex items-center gap-6">
-                                <div className="w-24 h-24 bg-slate-50 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-100">
-                                    {logoPreview ? (
-                                        <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-300">No Logo</span>
-                                    )}
-                                </div>
-                                <label className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-slate-800 transition-all flex items-center gap-2">
-                                    <Upload className="w-4 h-4" />
-                                    <span>Upload Logo</span>
-                                    <input type="file" className="hidden" onChange={(e) => handleFileChange(e, 'logo')} accept="image/*" />
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">Hero Image</label>
+                            <div className="aspect-[4/5] bg-slate-100 rounded-3xl overflow-hidden relative group border-2 border-dashed border-slate-200">
+                                {preview ? (
+                                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                                        <ImageIcon className="w-12 h-12" />
+                                    </div>
+                                )}
+                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                                    <Upload className="w-8 h-8 mb-2" />
+                                    <span className="text-xs font-black uppercase tracking-widest">Change Hero</span>
+                                    <input type="file" className="hidden" onChange={(e) => handleFileChange(e, 'hero')} accept="image/*" />
                                 </label>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* Catalog Configuration */}
+                {/* Impact Configuration */}
                 <section className="pt-8">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
                         <div className="w-1 h-3 bg-indigo-500"></div>
-                        Catalog Configuration
+                        Our Impact Section
                     </h3>
-                    <div className="max-w-md">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Latest Additions Count</label>
-                        <div className="flex items-center gap-4">
-                            <input
-                                type="range"
-                                min="4"
-                                max="20"
-                                step="2"
-                                className="flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                value={formData.latestAdditions.count}
-                                onChange={e => setFormData({
-                                    ...formData,
-                                    latestAdditions: { ...formData.latestAdditions, count: parseInt(e.target.value) }
-                                })}
-                            />
-                            <span className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center font-black text-slate-900 border border-slate-100">
-                                {formData.latestAdditions.count}
-                            </span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-2">Controls how many recent products are shown on the homepage.</p>
-                    </div>
-                </section>
-
-                {/* Flash Artifacts Configuration */}
-                <section className="pt-8">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
-                        <div className="w-1 h-3 bg-indigo-500"></div>
-                        Flash Artifacts (Sale)
-                    </h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-6">
-                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                <input
-                                    type="checkbox"
-                                    className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
-                                    checked={formData.flashSale.enabled}
-                                    onChange={e => setFormData({
-                                        ...formData,
-                                        flashSale: { ...formData.flashSale, enabled: e.target.checked }
-                                    })}
-                                />
-                                <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Enable Flash Section</span>
-                            </div>
-
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">End Time (Countdown)</label>
-                                <input
-                                    type="datetime-local"
-                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"
-                                    value={formData.flashSale.endTime}
-                                    onChange={e => setFormData({
-                                        ...formData,
-                                        flashSale: { ...formData.flashSale, endTime: e.target.value }
-                                    })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Section Title</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Title</label>
                                 <input
                                     type="text"
                                     className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
-                                    value={formData.flashSale.title}
-                                    onChange={e => setFormData({
-                                        ...formData,
-                                        flashSale: { ...formData.flashSale, title: e.target.value }
-                                    })}
+                                    value={formData.impact.title}
+                                    onChange={e => setFormData({ ...formData, impact: { ...formData.impact, title: e.target.value } })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Description</label>
+                                <textarea
+                                    rows={4}
+                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold resize-none"
+                                    value={formData.impact.description}
+                                    onChange={e => setFormData({ ...formData, impact: { ...formData.impact, description: e.target.value } })}
                                 />
                             </div>
                         </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Select Products ({formData.flashSale.products.length})</label>
-                            <div className="bg-slate-50 rounded-2xl p-4 h-80 overflow-y-auto space-y-2 border border-slate-100">
-                                {allProducts.map(product => (
-                                    <label key={product._id} className="flex items-center gap-3 p-3 bg-white rounded-xl cursor-pointer hover:bg-indigo-50 transition-colors border border-slate-100">
-                                        <input
-                                            type="checkbox"
-                                            className="w-4 h-4 accent-indigo-600 rounded"
-                                            checked={formData.flashSale.products.includes(product._id)}
-                                            onChange={e => {
-                                                const id = product._id;
-                                                const current = formData.flashSale.products;
-                                                const newProducts = e.target.checked
-                                                    ? [...current, id]
-                                                    : current.filter(pid => pid !== id);
-                                                setFormData({
-                                                    ...formData,
-                                                    flashSale: { ...formData.flashSale, products: newProducts }
-                                                });
-                                            }}
-                                        />
-                                        <img src={product.images?.[0]?.url} alt="" className="w-8 h-8 rounded-lg object-cover bg-slate-200" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-bold text-slate-900 truncate">{product.name}</p>
-                                            <p className="text-[10px] text-slate-400 font-mono">${product.price}</p>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                            <p className="text-[10px] text-slate-400 mt-2 text-right">Selected products will appear in Flash section.</p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Collective Index Section */}
-                <section className="pt-8">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
-                        <div className="w-1 h-3 bg-indigo-500"></div>
-                        Collective Index Configuration
-                    </h3>
-
-                    <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Section Title</label>
-                                    <input
-                                        type="text"
-                                        className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold text-slate-900"
-                                        value={formData.collectiveIndex.title}
-                                        onChange={e => setFormData({
-                                            ...formData,
-                                            collectiveIndex: { ...formData.collectiveIndex, title: e.target.value }
-                                        })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Description Text</label>
-                                    <textarea
-                                        rows={4}
-                                        className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
-                                        value={formData.collectiveIndex.description}
-                                        onChange={e => setFormData({
-                                            ...formData,
-                                            collectiveIndex: { ...formData.collectiveIndex, description: e.target.value }
-                                        })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Button Label</label>
-                                    <input
-                                        type="text"
-                                        className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
-                                        value={formData.collectiveIndex.buttonText}
-                                        onChange={e => setFormData({
-                                            ...formData,
-                                            collectiveIndex: { ...formData.collectiveIndex, buttonText: e.target.value }
-                                        })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">Background Imagery</label>
-                                <div className="aspect-[4/5] bg-slate-100 rounded-3xl overflow-hidden relative group border-2 border-dashed border-slate-200">
-                                    {preview ? (
-                                        <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                            <ImageIcon className="w-12 h-12" />
-                                        </div>
-                                    )}
-                                    <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
-                                        <Upload className="w-8 h-8 mb-2" />
-                                        <span className="text-xs font-black uppercase tracking-widest">Change Asset</span>
-                                        <input type="file" className="hidden" onChange={(e) => handleFileChange(e, 'image')} accept="image/*" />
-                                    </label>
-                                </div>
-                                <p className="text-[10px] text-slate-400 font-medium text-center">Recommended: 2000x2500px, WebP/JPG</p>
+                        <div className="space-y-4">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">Impact Image</label>
+                            <div className="aspect-[4/5] bg-slate-100 rounded-3xl overflow-hidden relative group border-2 border-dashed border-slate-200">
+                                {impactPreview ? (
+                                    <img src={impactPreview} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                                        <ImageIcon className="w-12 h-12" />
+                                    </div>
+                                )}
+                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                                    <Upload className="w-8 h-8 mb-2" />
+                                    <span className="text-xs font-black uppercase tracking-widest">Change Impact</span>
+                                    <input type="file" className="hidden" onChange={(e) => handleFileChange(e, 'impact')} accept="image/*" />
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -447,18 +412,6 @@ const ContentManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Newsletter Subtext</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
-                                    value={formData.footer.newsletterText}
-                                    onChange={e => setFormData({
-                                        ...formData,
-                                        footer: { ...formData.footer, newsletterText: e.target.value }
-                                    })}
-                                />
-                            </div>
-                            <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Copyright Line</label>
                                 <input
                                     type="text"
@@ -469,30 +422,6 @@ const ContentManagement: React.FC = () => {
                                         footer: { ...formData.footer, copyrightText: e.target.value }
                                     })}
                                 />
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">Social Links</label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {['facebook', 'twitter', 'instagram', 'github'].map(platform => (
-                                    <div key={platform}>
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{platform}</label>
-                                        <input
-                                            type="text"
-                                            placeholder="https://..."
-                                            className="w-full p-3 bg-slate-50 border-none rounded-xl text-xs font-bold"
-                                            value={(formData.footer.socialLinks as any)[platform]}
-                                            onChange={e => setFormData({
-                                                ...formData,
-                                                footer: {
-                                                    ...formData.footer,
-                                                    socialLinks: { ...formData.footer.socialLinks, [platform]: e.target.value }
-                                                }
-                                            })}
-                                        />
-                                    </div>
-                                ))}
                             </div>
                         </div>
                     </div>

@@ -70,13 +70,17 @@ export const productService = {
         return response.data.data.categories;
     },
 
-    createCategory: async (categoryData: any): Promise<any> => {
-        const response = await api.post<ApiResponse<{ category: any }>>('/products/categories', categoryData);
+    createCategory: async (categoryData: FormData | any): Promise<any> => {
+        const isFormData = categoryData instanceof FormData;
+        const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+        const response = await api.post<ApiResponse<{ category: any }>>('/products/categories', categoryData, config);
         return response.data.data.category;
     },
 
-    updateCategory: async (id: string, categoryData: any): Promise<any> => {
-        const response = await api.put<ApiResponse<{ category: any }>>(`/products/categories/${id}`, categoryData);
+    updateCategory: async (id: string, categoryData: FormData | any): Promise<any> => {
+        const isFormData = categoryData instanceof FormData;
+        const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+        const response = await api.put<ApiResponse<{ category: any }>>(`/products/categories/${id}`, categoryData, config);
         return response.data.data.category;
     },
 

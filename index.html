@@ -3,73 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Avenly by Huma | Modern Luxury Marketplace</title>
+  <title>Avenly by Huma | Sustainable Luxury Bedding</title>
   <!-- Favicon -->
   <link rel="icon" href="https://res.cloudinary.com/dapefjneu/image/upload/v1769443173/content/a1l4arewmufu2uqif3hc.png" type="image/x-icon">
-  <!-- For Apple devices -->
-  <link rel="apple-touch-icon" href="https://res.cloudinary.com/dapefjneu/image/upload/v1769443173/content/a1l4arewmufu2uqif3hc.png">
-  <!-- Optional: For modern browsers -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dapefjneu/image/upload/v1769443173/content/a1l4arewmufu2uqif3hc.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://res.cloudinary.com/dapefjneu/image/upload/v1769443173/content/a1l4arewmufu2uqif3hc.png">
-
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2C3E50', // Deep Slate
+            secondary: '#95A5A6', // Soft Grey
+            accent: '#D4AC0D', // Muted Gold
+            sand: '#F5F5F1', // Warm White
+            stone: '#Eae7e0', // Light Beige
+            sage: '#8F9779', // Muted Green
+            earth: '#5D5C61', // Dark Grey
+          },
+          fontFamily: {
+            sans: ['Lato', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
   <style>
     :root {
-      --primary: #1a1a1a;
-      --accent: #4f46e5;
-      --bg: #ffffff;
+      --bg: #F5F5F1;
+      --text: #2C3E50;
     }
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Lato', sans-serif;
       background-color: var(--bg);
-      color: #000000;
+      color: var(--text);
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
     
-    /* Luxury Blade Expansion */
-    .hero-blade {
-      transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
-      flex: 1;
-      position: relative;
-    }
-    .hero-blade:hover {
-      flex: 2.5;
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Playfair Display', serif;
     }
 
-    /* Glassmorphism Header */
-    .glass-header {
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      background: rgba(255, 255, 255, 0.7);
+    /* Soft Fade In */
+    .fade-in {
+      animation: fadeIn 0.8s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Smooth Hover Image Pan */
-    @keyframes slowPan {
-      0% { transform: scale(1.1) translateX(0); }
-      50% { transform: scale(1.15) translateX(-2%); }
-      100% { transform: scale(1.1) translateX(0); }
+    /* Subtle Hover States */
+    .hover-lift {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .animate-pan {
-      animation: slowPan 30s ease-in-out infinite;
-    }
-
-    /* Scrollbar Styling */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Luxury Card Shadows */
-    .shadow-luxury {
-      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
-      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-    .shadow-luxury:hover {
-      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.1);
-      transform: translateY(-5px);
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
     
-    ::selection { background: #000; color: #fff; }
+    ::selection { background: #8F9779; color: #fff; }
   </style>
 <script type="importmap">
 {

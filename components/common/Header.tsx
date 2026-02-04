@@ -12,8 +12,6 @@ import { contentService } from '../../services/contentService';
 import { orderService } from '../../services/orderService';
 import { Order } from '../../types';
 
-// Removed static CATEGORIES literal
-
 const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -23,9 +21,9 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [showRegister, setShowRegister] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  // New State for Features
   const [categories, setCategories] = useState<string[]>(['All']);
-  const [siteSettings, setSiteSettings] = useState<{ siteName: string; logoUrl: string }>({ siteName: 'Avenly by Huma.', logoUrl: '' });
+  const [headerConfig, setHeaderConfig] = useState({ topBarText: '', announcementEnabled: true });
+  const [siteSettings, setSiteSettings] = useState<{ siteName: string; logoUrl: string }>({ siteName: 'Avenly by Huma', logoUrl: '' });
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [trackingOrderId, setTrackingOrderId] = useState('');
   const [trackingResult, setTrackingResult] = useState<Order | null>(null);
@@ -41,12 +39,6 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
     const fetchCategories = async () => {
       try {
         const cats = await productService.getCategories();
-        // Assuming API returns objects { _id, name, ... } or strings
-        // Checking productService return type... it returns any[].
-        // Let's assume Backend sends objects. We need names.
-        // Wait, productController.getCategories returns Category objects. 
-        // We need to map them to strings or use them as objects.
-        // For simplicity to match existing UI, we'll map to names.
         const catNames = ['All', ...cats.map((c: any) => c.name)];
         setCategories(catNames);
       } catch (err) {
@@ -57,13 +49,20 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
     const fetchSettings = async () => {
       try {
         const content = await contentService.getContent('home_page');
-        if (content && content.siteSettings) {
-          setSiteSettings({
-            siteName: content.siteSettings.siteName || 'Avenly by Huma.',
-            logoUrl: content.siteSettings.logoUrl || ''
-          });
-          // Update document title and description if needed, or handle in a top-level component
-          if (content.siteSettings.siteName) document.title = content.siteSettings.siteName;
+        if (content) {
+          if (content.siteSettings) {
+            setSiteSettings({
+              siteName: content.siteSettings.siteName || 'Avenly by Huma',
+              logoUrl: content.siteSettings.logoUrl || ''
+            });
+            if (content.siteSettings.siteName) document.title = content.siteSettings.siteName;
+          }
+          if (content.header) {
+            setHeaderConfig({
+              topBarText: content.header.topBarText || '100% Organic & Fairtrade | Free Shipping',
+              announcementEnabled: content.header.announcementEnabled ?? true
+            });
+          }
         }
       } catch (err) {
         console.error('Failed to load site settings');
@@ -77,7 +76,6 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trackingOrderId) return;
-
     try {
       setTrackingLoading(true);
       setTrackingError(null);
@@ -91,9 +89,8 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
     }
   };
 
-
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 80);
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -102,7 +99,6 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
     setMobileMenuOpen(false);
     if (location.state?.openLogin) {
       setShowLogin(true);
-      // Clear state so it doesn't reopen on refresh/nav
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -117,339 +113,218 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
 
   const isHome = location.pathname === '/';
 
+  // Styles for Eco-Luxury - Always visible navbar
+  const headerClass = `fixed top-0 left-0 w-full z-[100] transition-all duration-500 flex flex-col bg-sand/95 backdrop-blur-md shadow-sm text-primary`;
+
+  const linkClass = `text-sm font-medium tracking-wide transition-colors duration-300 font-sans text-primary hover:text-sage`;
+
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-1000 ${isScrolled
-          ? 'glass-header py-4 md:py-5 border-b border-gray-100 shadow-sm'
-          : 'bg-transparent py-6 md:py-10'
-          }`}
-      >
-        <div className="max-w-[1800px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+      <header className={headerClass}>
+        {headerConfig.announcementEnabled && (
+          <div className="bg-sage text-white py-2 text-center text-[10px] md:text-xs font-medium tracking-widest uppercase transition-all">
+            {headerConfig.topBarText}
+          </div>
+        )}
+        <div className={`w-full max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between ${isScrolled || !isHome ? 'py-4' : 'py-6'}`}>
+
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className={`lg:hidden p-2 -ml-2 transition-all duration-500 ${!isScrolled && isHome ? 'text-white' : 'text-black'
-              }`}
+            className="lg:hidden p-2 -ml-2 text-primary"
           >
             <Menu className="h-6 w-6" />
           </button>
 
-          <nav className="hidden lg:flex items-center space-x-12">
-            <Link to="/" className={`text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 ${!isScrolled && isHome ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-black'}`}>
-              Home
-            </Link>
-            <Link to="/products" className={`text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 ${!isScrolled && isHome ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-black'}`}>
-              All Products
-            </Link>
-            {categories.filter(c => c !== 'All').slice(0, 4).map((cat) => (
-              <Link
-                key={cat}
-                to={`/products?category=${cat}`}
-                className={`text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 ${!isScrolled && isHome ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-black'
-                  }`}
-              >
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center space-x-10">
+            <Link to="/" className={linkClass}>Home</Link>
+            <Link to="/products" className={linkClass}>Shop</Link>
+            {categories.filter(c => c !== 'All').slice(0, 3).map((cat) => (
+              <Link key={cat} to={`/products?category=${cat}`} className={linkClass}>
                 {cat}
               </Link>
             ))}
           </nav>
 
+          {/* Logo */}
           <Link
             to="/"
-            className={`text-xl md:text-2xl font-black tracking-tighter uppercase absolute left-1/2 -translate-x-1/2 transition-all duration-700 ${!isScrolled && isHome ? 'text-white' : 'text-black'
-              } flex items-center justify-center`}
+            className="text-2xl md:text-3xl font-serif font-bold tracking-tight absolute left-1/2 -translate-x-1/2 text-primary flex items-center justify-center"
           >
             {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.siteName} className="h-8 md:h-10 w-auto object-contain" />
+              <img src={siteSettings.logoUrl} alt={siteSettings.siteName} className="h-10 w-auto object-contain" />
             ) : (
-              <>{siteSettings.siteName.replace('.', '')}<span className="text-indigo-600">.</span></>
+              <span>{siteSettings.siteName}</span>
             )}
           </Link>
 
-          <div className="flex items-center space-x-4 md:space-x-8">
+          {/* Icons */}
+          <div className="flex items-center space-x-5">
             <button
               onClick={() => setSearchOpen(true)}
-              className={`transition-all duration-500 ${!isScrolled && isHome ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-black'}`}
+              className="text-primary hover:text-sage transition-colors duration-300"
             >
               <Search className="h-5 w-5" />
             </button>
 
             <button
               onClick={() => setTrackingModalOpen(true)}
-              className={`transition-all duration-500 hidden sm:block text-xs font-black uppercase tracking-widest ${!isScrolled && isHome ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-black'}`}
+              className="hidden sm:block text-xs font-bold uppercase tracking-widest text-primary hover:text-sage transition-colors duration-300"
             >
-              Track Order
+              Track
             </button>
 
             {isLoggedIn ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserDropdown(!showUserDropdown)}
-                  className={`transition-all duration-500 hidden sm:flex items-center gap-2 ${!isScrolled && isHome ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-black'}`}
-                >
+              <div className="relative group">
+                <Link to="/profile" className="flex items-center gap-2 text-primary hover:text-sage transition-colors">
                   <User className="h-5 w-5" />
-                  <span className="text-xs font-semibold">{user?.name}</span>
-                </button>
-
-                {showUserDropdown && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowUserDropdown(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
-                      {user?.role === 'admin' && (
-                        <Link
-                          to="/admin"
-                          className="block px-4 py-2 text-sm text-indigo-600 font-bold hover:bg-indigo-50 transition"
-                          onClick={() => setShowUserDropdown(false)}
-                        >
-                          Admin Dashboard
-                        </Link>
-                      )}
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
-                        onClick={() => setShowUserDropdown(false)}
-                      >
-                        My Profile
-                      </Link>
-
-                      <Link
-                        to="/profile?tab=orders"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
-                        onClick={() => setShowUserDropdown(false)}
-                      >
-                        My Orders
-                      </Link>
-                      <button
-                        onClick={async () => {
-                          await logout();
-                          setShowUserDropdown(false);
-                          navigate('/');
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </button>
-                    </div>
-                  </>
-                )}
+                </Link>
+                {/* Simple Dropdown on Hover could go here, keeping it clean for now */}
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setShowLogin(true)}
-                  className={`transition-all duration-500 hidden sm:block text-xs font-semibold ${!isScrolled && isHome ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-black'}`}
-                >
-                  Login
-                </button>
-              </div>
+              <button
+                onClick={() => setShowLogin(true)}
+                className="hidden sm:block text-sm font-medium text-primary hover:text-sage transition-colors"
+              >
+                Login
+              </button>
             )}
 
             <button
               onClick={onCartOpen}
-              className={`relative group flex items-center gap-2 md:gap-4 transition-all duration-700 ${!isScrolled && isHome ? 'text-white' : 'text-black'
-                }`}
+              className="relative group flex items-center gap-2 text-primary hover:text-sage transition-colors"
             >
-              <div className="relative">
-                <ShoppingCart className={`h-5 w-5 transition-colors duration-500 ${!isScrolled && isHome ? 'text-white' : 'text-gray-400 group-hover:text-black'}`} />
-                {totalItems > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-indigo-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-4 ring-white shadow-xl">
-                    {totalItems}
-                  </span>
-                )}
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] hidden lg:block">Bag</span>
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-sage text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                  {totalItems}
+                </span>
+              )}
             </button>
           </div>
         </div>
 
+        {/* Search Overlay */}
         {searchOpen && (
-          <div className="fixed inset-0 bg-white/98 backdrop-blur-3xl z-[110] flex items-center justify-center p-6 lg:p-12 animate-up">
+          <div className="fixed inset-0 bg-sand/98 z-[110] flex items-center justify-center p-6 animate-fade-in">
             <button
               onClick={() => setSearchOpen(false)}
-              className="absolute top-8 right-8 md:top-12 md:right-12 p-4 md:p-5 hover:bg-gray-50 rounded-full transition-all"
+              className="absolute top-8 right-8 p-4 hover:bg-stone rounded-full transition-all"
             >
-              <ArrowRight className="h-6 w-6 md:h-8 md:w-8 rotate-45 text-black" />
+              <X className="h-8 w-8 text-primary" />
             </button>
-            <div className="w-full max-w-5xl">
-              <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.8em] text-indigo-600 mb-8 md:mb-12 block text-center">Master Index Search</span>
-              <form onSubmit={handleSearch} className="relative">
+            <div className="w-full max-w-4xl text-center">
+              <span className="text-xs font-bold uppercase tracking-widest text-sage mb-6 block">Search Collection</span>
+              <form onSubmit={handleSearch}>
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Search catalog..."
-                  className="w-full text-4xl md:text-6xl lg:text-9xl font-light tracking-tighter text-center border-none outline-none bg-transparent placeholder:text-gray-100"
+                  placeholder="What are you looking for?"
+                  className="w-full text-3xl md:text-5xl font-serif text-primary bg-transparent border-b-2 border-primary/10 pb-4 text-center focus:border-sage outline-none placeholder:text-primary/20 transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <div className="mt-12 md:mt-20 flex flex-wrap justify-center gap-4 md:gap-6">
-                  {categories.slice(1, 6).map(cat => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setSearchQuery(cat)}
-                      className="px-6 py-2 md:px-8 md:py-3 border border-gray-100 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-[0.3em] hover:border-black hover:bg-black hover:text-white transition-all"
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
               </form>
             </div>
           </div>
         )}
       </header>
 
+      {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[150] lg:hidden transition-opacity duration-500 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-[150] lg:hidden transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         onClick={() => setMobileMenuOpen(false)}
       />
 
       <aside
-        className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-white z-[160] lg:hidden transform transition-transform duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-sand z-[160] lg:hidden transform transition-transform duration-500 ease-out shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
-        <div className="flex flex-col h-full p-8">
-          <div className="flex items-center justify-between mb-12">
-            <Link to="/" className="text-xl font-black uppercase tracking-tighter">
-              Avenly by Huma<span className="text-indigo-600">.</span>
-            </Link>
+        <div className="flex flex-col h-full p-8 px-10">
+          <div className="flex items-center justify-between mb-16">
+            <span className="text-xl font-serif font-bold text-primary">{siteSettings.siteName}</span>
             <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2">
-              <X className="h-6 w-6 text-gray-400" />
+              <X className="h-6 w-6 text-primary" />
             </button>
           </div>
 
-          <nav className="flex flex-col space-y-6">
-            <Link to="/" className="text-2xl font-light tracking-tighter uppercase flex items-center justify-between group">
-              <span>Home</span>
-              <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all" />
-            </Link>
-            <Link to="/products" className="text-2xl font-light tracking-tighter uppercase flex items-center justify-between group">
-              <span>All Artifacts</span>
-              <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all" />
-            </Link>
+          <nav className="flex flex-col space-y-8">
+            <Link to="/" className="text-2xl font-serif text-primary hover:text-sage transition-colors">Home</Link>
+            <Link to="/products" className="text-2xl font-serif text-primary hover:text-sage transition-colors">Shop All</Link>
             {categories.filter(c => c !== 'All').map((cat) => (
               <Link
                 key={cat}
                 to={`/products?category=${cat}`}
-                className="text-2xl font-light tracking-tighter uppercase flex items-center justify-between group"
+                className="text-2xl font-serif text-primary hover:text-sage transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
               >
-                <span>{cat}</span>
-                <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all" />
+                {cat}
               </Link>
             ))}
           </nav>
 
-          <div className="mt-auto pt-8 border-t border-gray-50 space-y-8">
-            <Link to="/profile" className="flex items-center space-x-4 text-xs font-black uppercase tracking-[0.3em] text-gray-400">
-              <User className="h-4 w-4" />
-              <span>{isLoggedIn ? user?.name : 'Member Login'}</span>
-            </Link>
+          <div className="mt-auto pt-8 border-t border-primary/10 space-y-6">
+            {!isLoggedIn && (
+              <button onClick={() => { setMobileMenuOpen(false); setShowLogin(true); }} className="text-lg font-sans text-primary block">
+                Login / Register
+              </button>
+            )}
+            {isLoggedIn && (
+              <div className="flex flex-col gap-4">
+                <Link to="/profile" className="text-lg font-sans text-primary">My Account</Link>
+                <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-lg font-sans text-red-500 text-left">Logout</button>
+              </div>
+            )}
           </div>
         </div>
       </aside>
 
-      {/* Auth Modals */}
+      {/* Auth & Tracking Modals - styling simplified/aligned */}
       {showLogin && (
         <LoginForm
           onClose={() => setShowLogin(false)}
-          onSwitchToRegister={() => {
-            setShowLogin(false);
-            setShowRegister(true);
-          }}
+          onSwitchToRegister={() => { setShowLogin(false); setShowRegister(true); }}
         />
       )}
 
       {showRegister && (
         <RegisterForm
           onClose={() => setShowRegister(false)}
-          onSwitchToLogin={() => {
-            setShowRegister(false);
-            setShowLogin(true);
-          }}
+          onSwitchToLogin={() => { setShowRegister(false); setShowLogin(true); }}
         />
       )}
-      {/* Tracking Modal */}
+
+      {/* Tracking Modal (Simplified styling) */}
       {trackingModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-[2rem] p-8 shadow-2xl relative animate-in fade-in zoom-in-95">
-            <button onClick={() => setTrackingModalOpen(false)} className="absolute top-6 right-6 p-2 hover:bg-gray-50 rounded-full transition-all">
-              <X className="w-5 h-5 text-gray-400" />
+        <div className="fixed inset-0 bg-primary/40 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+          <div className="bg-sand w-full max-w-md rounded-lg p-8 shadow-2xl relative">
+            <button onClick={() => setTrackingModalOpen(false)} className="absolute top-4 right-4 text-primary/50 hover:text-primary">
+              <X className="w-5 h-5" />
             </button>
-
-            <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-8">Locate Order</h3>
-
-            <form onSubmit={handleTrackOrder} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Order Identification</label>
-                <input
-                  type="text"
-                  value={trackingOrderId}
-                  onChange={e => setTrackingOrderId(e.target.value)}
-                  placeholder="Order ID - 24-characters"
-                  className="w-full bg-gray-50 p-4 rounded-xl text-sm font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600 font-mono"
-                />
-              </div>
-
+            <h3 className="text-2xl font-serif font-bold text-primary mb-6">Track Your Order</h3>
+            <form onSubmit={handleTrackOrder} className="space-y-4">
+              <input
+                type="text"
+                value={trackingOrderId}
+                onChange={e => setTrackingOrderId(e.target.value)}
+                placeholder="Order ID"
+                className="w-full bg-white p-3 rounded-md border border-primary/20 outline-none focus:border-sage"
+              />
               <button
                 type="submit"
                 disabled={trackingLoading}
-                className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:bg-black transition-colors disabled:opacity-50"
+                className="w-full bg-primary text-sand py-3 rounded-md font-bold uppercase text-xs tracking-widest hover:bg-sage transition-colors"
               >
-                {trackingLoading ? 'Scanning...' : 'Track Status'}
+                {trackingLoading ? 'Checking...' : 'Track'}
               </button>
             </form>
-
-            {trackingError && (
-              <div className="mt-6 p-4 bg-red-50 text-red-600 rounded-xl text-center text-xs font-black uppercase tracking-widest border border-red-100">
-                {trackingError}
-              </div>
-            )}
-
+            {trackingError && <p className="mt-4 text-red-500 text-sm text-center">{trackingError}</p>}
             {trackingResult && (
-              <div className="mt-8 pt-8 border-t border-gray-100 animate-in slide-in-from-bottom-4 space-y-6">
-                <div className="flex flex-col gap-2">
-                  <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Order Identification</span>
-                  <span className="text-gray-900 font-mono text-[10px] break-all uppercase">{trackingResult._id}</span>
-                </div>
-
-                <div className="space-y-4 max-h-40 overflow-y-auto pr-2 scrollbar-hide">
-                  {trackingResult.items?.map((item: any, idx: number) => (
-                    <Link
-                      key={idx}
-                      to={`/products/${item.product?._id || item.product}`}
-                      onClick={() => setTrackingModalOpen(false)}
-                      className="flex items-center gap-4 hover:bg-gray-50 p-2 -m-2 rounded-xl transition-all group/item"
-                    >
-                      <div className="w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                        <img
-                          src={item.product?.images?.[0]?.url || item.product?.image || '/placeholder.png'}
-                          alt={item.product?.name}
-                          className="w-full h-full object-cover grayscale group-hover/item:grayscale-0 transition-all"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-black text-gray-900 uppercase truncate group-hover/item:text-indigo-600 transition-colors">{item.product?.name}</p>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase">Qty: {item.quantity} • ${item.price}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="pt-4 border-t border-gray-50 flex justify-between items-center">
-                  <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Status Protocol</span>
-                  <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${trackingResult.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                    }`}>
-                    {trackingResult.status}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Order Amount</span>
-                  <span className="text-gray-900 font-black">${trackingResult.totalPrice.toFixed(2)}</span>
-                </div>
+              <div className="mt-6 pt-6 border-t border-primary/10">
+                <p className="font-bold text-primary mb-2">Status: <span className="text-sage">{trackingResult.status}</span></p>
+                <p className="text-sm text-primary/70">Total: ${trackingResult.totalPrice.toFixed(2)}</p>
               </div>
             )}
           </div>

@@ -26,10 +26,18 @@ import ReviewManagement from './pages/admin/ReviewManagement';
 import ContentManagement from './pages/admin/ContentManagement';
 import AdManagement from './pages/admin/AdManagement';
 import WishlistManagement from './pages/admin/WishlistManagement';
+import TestimonialManagement from './pages/admin/TestimonialManagement';
 import AdminLogin from './pages/admin/AdminLogin';
 import TrackOrder from './pages/TrackOrder';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdDisplayManager from './components/common/AdDisplayManager';
+import CookieConsent from './components/common/CookieConsent';
+
+// Static Pages
+import FAQ from './pages/FAQ';
+import Contact from './pages/Contact';
+import ShippingReturns from './pages/ShippingReturns';
+import About from './pages/About';
 
 
 const ScrollToTop = () => {
@@ -51,6 +59,7 @@ const AppContent = () => {
       {!isAdminRoute && <Header onCartOpen={openCart} />}
       {!isAdminRoute && <CartSidebar isOpen={isOpen} onClose={closeCart} />}
       <AdDisplayManager />
+      <CookieConsent />
 
       <main className="flex-grow">
         <Routes>
@@ -65,6 +74,13 @@ const AppContent = () => {
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/track-order" element={<TrackOrder />} />
+
+          {/* Static Pages */}
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/shipping-returns" element={<ShippingReturns />} />
+          <Route path="/about" element={<About />} />
+
           <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* Admin Routes */}
@@ -79,6 +95,7 @@ const AppContent = () => {
               <Route path="/admin/content" element={<ContentManagement />} />
               <Route path="/admin/ads" element={<AdManagement />} />
               <Route path="/admin/wishlist" element={<WishlistManagement />} />
+              <Route path="/admin/testimonials" element={<TestimonialManagement />} />
             </Route>
           </Route>
         </Routes>

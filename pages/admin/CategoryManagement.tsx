@@ -20,8 +20,10 @@ const CategoryManagement: React.FC = () => {
         name: '',
         slug: '',
         description: '',
-        parentCategory: ''
+        parentCategory: '',
+        image: ''
     });
+    const [file, setFile] = useState<File | null>(null);
 
     useEffect(() => {
         fetchCategories();
@@ -40,13 +42,15 @@ const CategoryManagement: React.FC = () => {
     };
 
     const handleOpenModal = (cat: any = null) => {
+        setFile(null);
         if (cat) {
             setSelectedCategory(cat);
             setFormData({
                 name: cat.name,
                 slug: cat.slug || '',
                 description: cat.description || '',
-                parentCategory: cat.parentCategory?._id || cat.parentCategory || ''
+                parentCategory: cat.parentCategory?._id || cat.parentCategory || '',
+                image: cat.image || ''
             });
         } else {
             setSelectedCategory(null);
@@ -54,24 +58,36 @@ const CategoryManagement: React.FC = () => {
                 name: '',
                 slug: '',
                 description: '',
-                parentCategory: ''
+                parentCategory: '',
+                image: ''
             });
         }
         setModalOpen(true);
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const sanitizedData = {
-                ...formData,
-                parentCategory: formData.parentCategory === '' ? null : formData.parentCategory
-            };
+            const data = new FormData();
+            data.append('name', formData.name);
+            data.append('slug', formData.slug);
+            data.append('description', formData.description);
+            if (formData.parentCategory) data.append('parentCategory', formData.parentCategory);
+
+            if (file) {
+                data.append('image', file);
+            }
 
             if (selectedCategory) {
-                await productService.updateCategory(selectedCategory._id, sanitizedData);
+                await productService.updateCategory(selectedCategory._id, data);
             } else {
-                await productService.createCategory(sanitizedData);
+                await productService.createCategory(data);
             }
             setModalOpen(false);
             fetchCategories();
@@ -255,6 +271,22 @@ const CategoryManagement: React.FC = () => {
                                     rows={3}
                                     className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Thumbnail Image</label>
+                                <div className="flex flex-col gap-2">
+                                    {formData.image && (
+                                        <div className="relative w-full h-32 bg-slate-50 rounded-2xl overflow-hidden">
+                                            <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
+                                    />
+                                </div>
                             </div>
                             <button
                                 type="submit"
