@@ -7,6 +7,9 @@ import { Product } from '../types';
 import { productService } from '../services/productService';
 import { contentService } from '../services/contentService';
 import Testimonials from '../components/sections/Testimonials';
+import Hero from '../components/sections/Hero';
+import FlashSale from '../components/sections/FlashSale';
+import { motion } from 'framer-motion';
 
 const normalizeProduct = (product: any): Product => ({
   ...product,
@@ -84,30 +87,19 @@ const Home: React.FC = () => {
       </div>
 
       {/* 2. Hero Section */}
-      <section className="relative h-[80vh] w-full overflow-hidden">
-        <img
-          src={hero.image || "https://images.unsplash.com/photo-1595521624992-48a59d495e6d?q=80&w=2487&auto=format&fit=crop"}
-          alt="Luxury Bedding"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/20 flex flex-col justify-center items-center text-center p-6">
-          <span className="text-white text-sm md:text-base uppercase tracking-[0.2em] mb-4">
-            {hero.subtitle || 'The New Collection'}
-          </span>
-          <h1 className="text-white text-5xl md:text-7xl font-serif font-medium mb-8">
-            {hero.title || "Sleep in Nature's"} <br /> <span className="italic">{hero.highlight || "Embrace"}</span>
-          </h1>
-          <Link
-            to={hero.link || "/products"}
-            className="bg-white text-primary px-8 py-3 md:px-10 md:py-4 rounded-sm text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-sage hover:text-white transition-colors"
-          >
-            {hero.buttonText || 'Shop Collection'}
-          </Link>
-        </div>
-      </section>
+      <Hero cmsData={cmsContent} />
+
+      {/* 2.5 Flash Sale Section */}
+      <FlashSale />
 
       {/* 3. Shop by Category */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        viewport={{ once: true }}
+        className="py-20 px-6 max-w-7xl mx-auto"
+      >
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-serif font-medium mb-4">Our Collections</h2>
           <p className="text-primary/60 max-w-lg mx-auto font-sans">
@@ -141,10 +133,16 @@ const Home: React.FC = () => {
             ))
           )}
         </div>
-      </section>
+      </motion.section>
 
       {/* 4. Bestsellers / Favorites */}
-      <section className="bg-white py-20 px-6">
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+        viewport={{ once: true }}
+        className="bg-white py-20 px-6"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-12">
             <div>
@@ -166,55 +164,164 @@ const Home: React.FC = () => {
             <Link to="/products" className="btn-primary inline-flex">View All</Link>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* 5. Our Impact / Story */}
-      <section className="py-24 px-6 bg-sage/5">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div className="relative aspect-square md:aspect-[4/5] order-2 md:order-1">
-            <img
-              src={impact.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=2000"}
-              alt="Sustainable Cotton"
-              className="w-full h-full object-cover rounded-sm"
-            />
+      {/* 5. Our Impact / Story - Professional Editorial Redesign */}
+      <section className="py-40 px-6 bg-[#FAF9F6] overflow-hidden">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-24 items-center">
+
+          {/* Static Editorial Image Composition */}
+          <div className="relative order-2 md:order-1">
+            <motion.div
+              initial={{ opacity: 0, scale: 1.1, x: -30 }}
+              whileInView={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }}
+              viewport={{ once: true, margin: "-100px" }}
+              className="relative aspect-[4/5] z-10"
+            >
+              {/* Main Image - Large & Stable */}
+              <div className="w-full h-full rounded-sm overflow-hidden shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.1)]">
+                <img
+                  src={impact.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=2000"}
+                  alt="Sustainable Cotton"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Overlapping Secondary Image - High-end Editorial Style */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
+                viewport={{ once: true }}
+                className="absolute -bottom-12 -right-12 w-3/5 aspect-square bg-[#FAF9F6] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-20 hidden md:block"
+              >
+                <div className="w-full h-full overflow-hidden">
+                  <img
+                    src="https://media.istockphoto.com/id/1137526672/photo/young-woman-with-fabric-samples-for-curtains-at-table-multiple-color-fabric-texture-samples.jpg?s=612x612&w=0&k=20&c=kfgV-pvqjYouJ0tfX_B691UKumlA1yTB4JEzXU-qQN0="
+                    alt="Fabric Detail"
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-[2s]"
+                  />
+                </div>
+              </motion.div>
+
+              {/* Decorative Accent */}
+              <div className="absolute -top-6 -left-6 w-24 h-24 border-t-2 border-l-2 border-sage/20 pointer-events-none" />
+            </motion.div>
           </div>
+
+          {/* Sophisticated Content Reveal */}
           <div className="order-1 md:order-2">
-            <div className="flex items-center gap-2 text-sage mb-4">
-              <Award className="h-5 w-5" />
-              <span className="text-xs uppercase tracking-widest font-bold">Our Impact</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-serif font-medium mb-6 leading-tight">
-              {impact.title || "Change the World"} <br /> <span className="italic text-primary/70">{impact.highlight || "While You Sleep"}</span>
-            </h2>
-            <p className="text-primary/70 font-sans leading-relaxed mb-8">
-              {impact.description || "We believe that luxury shouldn't cost the earth. That's why every product is crafted from 100% organic, Fairtrade certified materials. We work directly with farmers and artisans to ensure ethical production and exceptional quality."}
-            </p>
-            <div className="grid grid-cols-3 gap-8 mb-8 border-t border-primary/10 pt-8">
-              <div>
-                <h4 className="font-serif text-2xl mb-1">100%</h4>
-                <p className="text-xs text-primary/60 uppercase tracking-wider">Organic</p>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.15,
+                    delayChildren: 0.2
+                  }
+                }
+              }}
+            >
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, x: 20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+                className="flex items-center gap-4 text-sage mb-8"
+              >
+                <span className="w-12 h-[1px] bg-sage/40"></span>
+                <span className="text-[11px] uppercase tracking-[0.4em] font-black">Our Impact</span>
+              </motion.div>
+
+              <motion.h2
+                variants={{
+                  hidden: { opacity: 0, y: 40 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+                transition={{ duration: 1, ease: [0.33, 1, 0.68, 1] }}
+                className="text-6xl md:text-7xl font-serif font-light mb-10 leading-[1.1] text-primary"
+              >
+                {impact.title || "Change the World"} <br />
+                <span className="italic text-primary/60 font-serif block mt-3 indent-8 md:indent-16">
+                  {impact.highlight || "While You Sleep"}
+                </span>
+              </motion.h2>
+
+              <motion.p
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+                className="text-primary/60 font-sans leading-[1.8] text-lg mb-12 max-w-lg"
+              >
+                {impact.description || "We believe that luxury shouldn't cost the earth. That's why every product is crafted from 100% organic, Fairtrade certified materials. We work directly with farmers and artisans to ensure ethical production."}
+              </motion.p>
+
+              {/* Minimalist Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 border-t border-primary/5 pt-12">
+                {[
+                  { label: "Certified Organic", value: "100%" },
+                  { label: "Zero Plastics", value: "0%" },
+                  { label: "Ethically Made", value: "Fair" }
+                ].map((stat, i) => (
+                  <motion.div
+                    key={i}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="space-y-2"
+                  >
+                    <h4 className="font-serif text-3xl text-primary">{stat.value}</h4>
+                    <p className="text-[10px] text-primary/40 uppercase tracking-[0.2em] font-bold">{stat.label}</p>
+                  </motion.div>
+                ))}
               </div>
-              <div>
-                <h4 className="font-serif text-2xl mb-1">0%</h4>
-                <p className="text-xs text-primary/60 uppercase tracking-wider">Plastics</p>
-              </div>
-              <div>
-                <h4 className="font-serif text-2xl mb-1">Fair</h4>
-                <p className="text-xs text-primary/60 uppercase tracking-wider">Trade</p>
-              </div>
-            </div>
-            <Link to="/about" className="inline-block border-b border-primary pb-1 hover:text-sage hover:border-sage transition-colors text-sm uppercase tracking-widest font-bold">
-              Read Our Story
-            </Link>
+
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 10 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+              >
+                <Link
+                  to="/about"
+                  className="group inline-flex items-center gap-6 text-xs uppercase tracking-[0.3em] font-black text-primary hover:text-sage transition-all"
+                >
+                  <span className="border-b-2 border-primary/10 group-hover:border-sage pb-2 transition-all">Read Our Story</span>
+                  <div className="w-10 h-10 border border-primary/10 rounded-full flex items-center justify-center group-hover:bg-sage group-hover:border-sage transition-all">
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:text-white" />
+                  </div>
+                </Link>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <Testimonials />
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 1.2 }}
+        viewport={{ once: true }}
+      >
+        <Testimonials />
+      </motion.div>
 
       {/* 6. Newsletter / CTA (Handled by Footer but added extra callout) */}
-      <section className="py-24 px-6 text-center bg-sand">
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="py-24 px-6 text-center bg-sand"
+      >
         <div className="max-w-xl mx-auto">
           <h2 className="text-3xl font-serif font-medium mb-4">Join the Collective</h2>
           <p className="text-primary/60 mb-8">Sign up for early access to new collections and sustainable living tips.</p>
@@ -223,7 +330,7 @@ const Home: React.FC = () => {
             <button className="bg-primary text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-sage transition-colors">Sign Up</button>
           </div>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 };

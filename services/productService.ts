@@ -11,6 +11,7 @@ export const productService = {
         sort?: string;
         minPrice?: number;
         maxPrice?: number;
+        [key: string]: any; // Allow for generic filters like discount[gt]
     }): Promise<{
         products: Product[];
         pagination: { page: number; limit: number; total: number; pages: number };

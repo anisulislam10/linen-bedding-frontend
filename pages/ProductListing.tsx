@@ -91,7 +91,7 @@ const ProductListing: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
           {normalizedProducts.length === 0 ? (
             <div className="col-span-full py-40 text-center">
               <p className="text-2xl font-black text-gray-200 uppercase tracking-[0.5em]">No entries found in ledger</p>

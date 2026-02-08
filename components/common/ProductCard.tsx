@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { wishlistService } from '../../services/wishlistService';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const { addToCart } = useCart();
@@ -21,23 +22,25 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   });
 
   return (
-    <div
-      className="group flex flex-col h-full relative bg-gray-600 rounded-md overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+    <motion.div
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="group flex flex-col h-full relative bg-white rounded-xl overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] transition-all duration-500 border border-secondary/10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Stage */}
-      <Link to={`/products/${product.slug || product.id}`} className="relative aspect-[3/4] overflow-hidden bg-gray-700 block">
+      <Link to={`/products/${product.slug || product.id}`} className="relative aspect-[4/5] overflow-hidden bg-secondary/5 block">
         <img
           src={product.image}
           alt={product.name}
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 ${isHovered && product.secondaryImage ? 'opacity-0' : 'opacity-100'}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105 ${isHovered && product.secondaryImage ? 'opacity-0' : 'opacity-100'}`}
         />
         {product.secondaryImage && (
           <img
             src={product.secondaryImage}
             alt={product.name}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
           />
         )}
 
@@ -59,20 +62,20 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
               toast.error('Failed to update wishlist');
             }
           }}
-          className={`absolute top-2 right-2 p-2 transition-all ${isWishlisted ? 'text-white' : 'text-white/60 hover:text-white'}`}
+          className={`absolute top-3 right-3 p-2.5 rounded-full bg-white/80 backdrop-blur-md shadow-sm transition-all duration-300 transform ${isWishlisted ? 'text-red-500 scale-110' : 'text-primary/40 hover:text-red-500 hover:scale-110'}`}
         >
-          <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
+          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
         </button>
 
         {/* Quick Add Button - Appears on Hover */}
-        <div className={`absolute bottom-0 left-0 right-0 p-4 transition-transform duration-300 ${isHovered ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-500 ease-out ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               addToCart(product);
             }}
-            className="w-full bg-white/90 backdrop-blur text-primary py-3 px-4 text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-colors"
+            className="w-full bg-primary text-white py-3.5 px-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-sage transition-all duration-300 shadow-lg rounded-lg"
           >
             Quick Add
           </button>
@@ -80,17 +83,25 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       </Link>
 
       {/* Product Details Block */}
-      <div className="flex flex-col flex-grow text-center p-5">
-        <Link to={`/products/${product.slug || product.id}`}>
-          <h3 className="text-base font-sans font-medium text-white mb-2 tracking-wide group-hover:text-sage transition-colors line-clamp-1">
-            {product.name}
-          </h3>
-        </Link>
-        <p className="text-sm font-bold font-sans text-gray-300 tracking-wider">
+      <div className="flex flex-col flex-grow text-center p-6 space-y-3">
+        <div className="space-y-1">
+          <Link to={`/products/${product.slug || product.id}`}>
+            <h3 className="text-sm font-sans font-semibold text-primary/90 tracking-wide group-hover:text-sage transition-colors line-clamp-2 min-h-[40px] uppercase text-[11px] tracking-[0.05em]">
+              {product.name}
+            </h3>
+          </Link>
+          <div className="flex items-center justify-center space-x-1">
+            <div className="h-px w-4 bg-sage/30"></div>
+            <p className="text-[10px] text-sage font-medium uppercase tracking-widest">{product.category}</p>
+            <div className="h-px w-4 bg-sage/30"></div>
+          </div>
+        </div>
+
+        <p className="text-base font-serif font-medium text-primary">
           ${product.price.toFixed(2)}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

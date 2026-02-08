@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, User, Menu, ArrowRight, X, LogOut } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, ArrowRight, X, LogOut, ChevronDown } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -11,6 +11,8 @@ import { productService } from '../../services/productService';
 import { contentService } from '../../services/contentService';
 import { orderService } from '../../services/orderService';
 import { Order } from '../../types';
+import ScrollProgressBar from './ScrollProgressBar';
+import ScrollToTop from './ScrollToTop';
 
 const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,6 +31,19 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [trackingResult, setTrackingResult] = useState<Order | null>(null);
   const [trackingLoading, setTrackingLoading] = useState(false);
   const [trackingError, setTrackingError] = useState<string | null>(null);
+
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+
+  const announcements = headerConfig.topBarText.split('|').map(t => t.trim());
+
+  useEffect(() => {
+    if (announcements.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentAnnouncement(prev => (prev + 1) % announcements.length);
+      }, 3000);
+      return () => clearInterval(timer);
+    }
+  }, [announcements.length]);
 
   const { totalItems } = useCart();
   const { user, isLoggedIn, logout } = useAuth();
@@ -120,10 +135,20 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
 
   return (
     <>
+      <ScrollProgressBar />
+      <ScrollToTop />
       <header className={headerClass}>
         {headerConfig.announcementEnabled && (
-          <div className="bg-sage text-white py-2 text-center text-[10px] md:text-xs font-medium tracking-widest uppercase transition-all">
-            {headerConfig.topBarText}
+          <div className="bg-sage text-white py-2 relative h-10 overflow-hidden flex items-center justify-center text-[10px] md:text-xs font-medium tracking-widest uppercase transition-all">
+            {announcements.map((text, idx) => (
+              <div
+                key={idx}
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ${idx === currentAnnouncement ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                  }`}
+              >
+                {text}
+              </div>
+            ))}
           </div>
         )}
         <div className={`w-full max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between ${isScrolled || !isHome ? 'py-4' : 'py-6'}`}>
@@ -139,12 +164,36 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center space-x-10">
             <Link to="/" className={linkClass}>Home</Link>
+
+            {/* Categories Dropdown */}
+            <div className="relative group/categories h-full flex items-center">
+              <button className={`flex items-center gap-1.5 ${linkClass} group-hover/categories:text-sage`}>
+                Categories <ChevronDown className="h-4 w-4 transition-transform duration-300 group-hover/categories:rotate-180" />
+              </button>
+
+              <div className="absolute top-full -left-4 pt-4 opacity-0 translate-y-2 invisible group-hover/categories:opacity-100 group-hover/categories:visible group-hover/categories:translate-y-0 transition-all duration-300 z-[200]">
+                <div className="bg-white border border-secondary/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] py-4 min-w-[240px] overflow-hidden backdrop-blur-sm">
+                  <div className="px-6 pb-2 mb-2 border-b border-secondary/5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/40 text-left block">
+                      Browse Collections
+                    </span>
+                  </div>
+                  {categories.filter(c => c !== 'All').map((cat) => (
+                    <Link
+                      key={cat}
+                      to={`/products?category=${cat}`}
+                      className="flex items-center justify-between px-6 py-3 text-sm text-primary/80 hover:text-sage hover:bg-sage/5 transition-all text-left font-medium group/item"
+                    >
+                      <span>{cat}</span>
+                      <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <Link to="/products" className={linkClass}>Shop</Link>
-            {categories.filter(c => c !== 'All').slice(0, 3).map((cat) => (
-              <Link key={cat} to={`/products?category=${cat}`} className={linkClass}>
-                {cat}
-              </Link>
-            ))}
+            <Link to="/about" className={linkClass}>Our Story</Link>
           </nav>
 
           {/* Logo */}
@@ -291,8 +340,9 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
           </div>
 
           <nav className="flex flex-col space-y-8">
-            <Link to="/" className="text-2xl font-serif text-primary hover:text-sage transition-colors">Home</Link>
-            <Link to="/products" className="text-2xl font-serif text-primary hover:text-sage transition-colors">Shop All</Link>
+            <Link to="/" className="text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+            <Link to="/products" className="text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Shop All</Link>
+            <Link to="/about" className="text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Our Story</Link>
             {categories.filter(c => c !== 'All').map((cat) => (
               <Link
                 key={cat}

@@ -95,9 +95,9 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
               <span>Secure Checkout</span>
               <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link to="/cart" onClick={onClose} className="block text-center text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-black">
+            {/* <Link to="/cart" onClick={onClose} className="block text-center text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-black">
               View full cart
-            </Link>
+            </Link> */}
           </div>
         )}
       </div>
