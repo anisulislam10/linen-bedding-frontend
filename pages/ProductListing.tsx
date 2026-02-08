@@ -3,6 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import ProductCard from '../components/common/ProductCard';
 import { Product } from '../types';
 import { productService } from '../services/productService';
+import Loader from '../components/common/Loader';
 
 const normalizeProduct = (product: Product): Product => ({
   ...product,
@@ -52,13 +53,7 @@ const ProductListing: React.FC = () => {
   const normalizedProducts = products.map(normalizeProduct);
 
 
-  if (loading) {
-    return (
-      <div className="bg-white min-h-screen pt-24 flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+  if (loading) return <Loader fullPage color="#4A5D4E" />;
 
   if (error) {
     return (

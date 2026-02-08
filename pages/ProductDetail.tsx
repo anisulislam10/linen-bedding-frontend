@@ -8,6 +8,7 @@ import { productService } from '../services/productService';
 import { reviewService } from '../services/reviewService';
 import { wishlistService } from '../services/wishlistService';
 import toast from 'react-hot-toast';
+import Loader from '../components/common/Loader';
 
 const normalizeProduct = (product: Product): Product => ({
   ...product,
@@ -75,13 +76,7 @@ const ProductDetail: React.FC = () => {
     fetchProductData();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-24 flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+  if (loading) return <Loader fullPage color="#4A5D4E" />;
 
   if (error || !product) return (
     <div className="max-w-7xl mx-auto px-4 py-24 text-center">

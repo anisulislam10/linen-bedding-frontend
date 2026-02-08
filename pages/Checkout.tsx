@@ -10,6 +10,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import StripePaymentForm from '../components/cart/StripePaymentForm';
 import { Address } from '../types';
 import { userService } from '../services/userService';
+import Loader from '../components/common/Loader';
 
 // Load Stripe outside of component to avoid recreating it
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -216,10 +217,7 @@ const CheckoutForm: React.FC = () => {
                 className="w-full bg-gray-900 text-white py-6 rounded-[2.5rem] font-black text-xl flex items-center justify-center space-x-4 hover:bg-black transition-all shadow-2xl shadow-indigo-100 disabled:opacity-70 group"
               >
                 {isProcessing ? (
-                  <>
-                    <div className="animate-spin h-6 w-6 border-4 border-white border-t-transparent rounded-full" />
-                    <span className="uppercase tracking-[0.2em] text-sm">Initializing Protocol...</span>
-                  </>
+                  <Loader size="sm" color="white" />
                 ) : (
                   <>
                     <Truck className="h-6 w-6 group-hover:-translate-y-1 transition-transform" />

@@ -10,6 +10,7 @@ import Testimonials from '../components/sections/Testimonials';
 import Hero from '../components/sections/Hero';
 import FlashSale from '../components/sections/FlashSale';
 import { motion } from 'framer-motion';
+import Loader from '../components/common/Loader';
 
 const normalizeProduct = (product: any): Product => ({
   ...product,
@@ -60,7 +61,7 @@ const Home: React.FC = () => {
     fetchData();
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-sand flex items-center justify-center text-primary font-serif">Loading...</div>;
+  if (loading) return <Loader fullPage color="#4A5D4E" />;
 
   const hero = cmsContent?.hero || {};
   const impact = cmsContent?.impact || {};
