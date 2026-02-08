@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Layout, Info, ShieldCheck, ShoppingCart, Share2, Type, Clock, AlertTriangle } from 'lucide-react';
 import { contentService } from '../../services/contentService';
 import { productService } from '../../services/productService';
 import { Product } from '../../types';
+import { motion, AnimatePresence } from 'framer-motion';
+import Loader from '../../components/common/Loader';
 
 interface HeroSlide {
     title: string;
@@ -18,6 +20,13 @@ const ContentManagement: React.FC = () => {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [activeTab, setActiveTab] = useState<'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer'>('hero');
+
+    // Legal Content States
+    const [legalData, setLegalData] = useState({
+        privacy: { body: '', effectiveDate: '' },
+        terms: { body: '', lastUpdated: '' }
+    });
 
     // Legacy Single Hero Previews
     const [preview, setPreview] = useState<string | null>(null);
@@ -90,11 +99,16 @@ const ContentManagement: React.FC = () => {
     const fetchContent = async () => {
         try {
             setLoading(true);
-            const [content, productsData] = await Promise.all([
+            const [content, productsData, privacyData, termsData] = await Promise.all([
                 contentService.getContent('home_page'),
-                productService.getProducts({ limit: 100 })
+                productService.getProducts({ limit: 100 }),
+                contentService.getContent('privacy_policy').catch(() => null),
+                contentService.getContent('terms_service').catch(() => null)
             ]);
             setAllProducts(productsData.products);
+
+            if (privacyData) setLegalData(prev => ({ ...prev, privacy: privacyData }));
+            if (termsData) setLegalData(prev => ({ ...prev, terms: termsData }));
 
             if (content) {
                 const fetchedSlides = content.heroSlides || [];
@@ -229,6 +243,21 @@ const ContentManagement: React.FC = () => {
         }
     };
 
+    const handleLegalSubmit = async (type: 'privacy' | 'terms') => {
+        setSaving(true);
+        try {
+            const identifier = type === 'privacy' ? 'privacy_policy' : 'terms_service';
+            const data = new FormData();
+            data.append('content', JSON.stringify(type === 'privacy' ? legalData.privacy : legalData.terms));
+            await contentService.updateContent(identifier, data);
+            alert(`${type === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} updated`);
+        } catch (err: any) {
+            alert('Update failed: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -266,275 +295,412 @@ const ContentManagement: React.FC = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="h-96 flex items-center justify-center">
-                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-            </div>
-        );
-    }
+    const TabButton: React.FC<{ id: typeof activeTab; label: string; icon: any }> = ({ id, label, icon: Icon }) => (
+        <button
+            onClick={() => setActiveTab(id)}
+            className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all min-w-[160px] ${activeTab === id
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
+                    : 'bg-white text-slate-400 hover:text-slate-900 shadow-sm border border-slate-50'
+                }`}
+        >
+            <Icon className="w-4 h-4" />
+            <span>{label}</span>
+        </button>
+    );
+
+    if (loading) return <div className="h-[80vh] flex items-center justify-center"><Loader size="xl" color="#4F46E5" /></div>;
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto pb-20">
-            <div className="flex justify-between items-end">
+        <div className="space-y-10 max-w-6xl mx-auto pb-20 px-4 md:px-0">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">CMS Console</h1>
-                    <p className="text-slate-400 text-sm font-medium">Manage dynamic content blocks.</p>
+                    <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase mb-2">CMS Architecture</h1>
+                    <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">Global storefront identity coordinator.</p>
                 </div>
-                <button
-                    onClick={handleSubmit}
-                    disabled={saving}
-                    className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
-                >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    <span>Publish Changes</span>
-                </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 space-y-12">
-
-                {/* 1. Hero Slides Section */}
-                <section>
-                    <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-3">
-                            <div className="w-1 h-3 bg-indigo-500"></div>
-                            Hero Slider Builder
-                        </h3>
+                {activeTab !== 'legal' ? (
+                    <button
+                        onClick={handleSubmit}
+                        disabled={saving}
+                        className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all shadow-2xl shadow-indigo-100 disabled:opacity-50"
+                    >
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        <span>Sync Global Logic</span>
+                    </button>
+                ) : (
+                    <div className="flex gap-4">
                         <button
-                            type="button"
-                            onClick={addSlide}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase transition-all hover:bg-indigo-600"
+                            onClick={() => handleLegalSubmit('privacy')}
+                            disabled={saving}
+                            className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
                         >
-                            <Plus className="w-4 h-4" /> Add Slide
+                            <ShieldCheck className="w-4 h-4" /> Save Privacy
+                        </button>
+                        <button
+                            onClick={() => handleLegalSubmit('terms')}
+                            disabled={saving}
+                            className="bg-slate-900 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-black transition-all shadow-lg shadow-slate-100 disabled:opacity-50"
+                        >
+                            <Layout className="w-4 h-4" /> Save Terms
                         </button>
                     </div>
+                )}
+            </div>
 
-                    <div className="space-y-6">
-                        {formData.heroSlides.map((slide, index) => (
-                            <div key={index} className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 relative group transition-all hover:shadow-md">
-                                {/* Slide Controls */}
-                                <div className="absolute right-4 top-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Tab Navigation */}
+            <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                <TabButton id="hero" label="Hero Engine" icon={Layout} />
+                <TabButton id="impact" label="Impact Story" icon={Info} />
+                <TabButton id="store" label="Store Core" icon={ShoppingCart} />
+                <TabButton id="flash" label="Flash Sale" icon={Clock} />
+                <TabButton id="footer" label="Footer/Social" icon={Share2} />
+                <TabButton id="legal" label="Legal Center" icon={ShieldCheck} />
+            </div>
+
+            {/* Dynamic Content Area */}
+            <div className="bg-white/40 backdrop-blur-xl rounded-[3rem] border border-slate-100 p-8 md:p-14 shadow-sm min-h-[700px]">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                    >
+                        {/* 1. Hero Tab */}
+                        {activeTab === 'hero' && (
+                            <div className="space-y-12">
+                                <div className="flex justify-between items-center bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
+                                    <div>
+                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Sequence Controller</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                            Active Leads: {formData.heroSlides.length}
+                                        </p>
+                                    </div>
                                     <button
                                         type="button"
-                                        onClick={() => moveSlide(index, 'up')}
-                                        disabled={index === 0}
-                                        className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 disabled:opacity-20"
+                                        onClick={addSlide}
+                                        className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-indigo-600 shadow-xl shadow-indigo-100"
                                     >
-                                        <ChevronUp className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => moveSlide(index, 'down')}
-                                        disabled={index === formData.heroSlides.length - 1}
-                                        className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 disabled:opacity-20"
-                                    >
-                                        <ChevronDown className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeSlide(index)}
-                                        className="p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600 ml-2"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Plus className="w-5 h-5" /> Initialize Sequence
                                     </button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    {/* Image Upload */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Slide Image</label>
-                                        <div className="aspect-[4/5] bg-slate-200/50 rounded-2xl overflow-hidden relative group border-2 border-dashed border-slate-200">
-                                            {slidePreviews[index] ? (
-                                                <img src={slidePreviews[index]!} alt="Slide" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                                    <ImageIcon className="w-10 h-10" />
+                                <div className="grid grid-cols-1 gap-10">
+                                    {formData.heroSlides.map((slide, index) => (
+                                        <div key={index} className="bg-white border border-slate-100 rounded-[3rem] p-10 relative group transition-all hover:shadow-2xl hover:shadow-indigo-50/30">
+                                            {/* Slide Controls */}
+                                            <div className="absolute right-10 top-10 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                                                <button type="button" onClick={() => moveSlide(index, 'up')} disabled={index === 0} className="p-4 bg-slate-50 hover:bg-white rounded-2xl text-slate-400 hover:text-indigo-600 disabled:opacity-20 border border-slate-100 shadow-sm transition-colors"><ChevronUp className="w-5 h-5" /></button>
+                                                <button type="button" onClick={() => moveSlide(index, 'down')} disabled={index === formData.heroSlides.length - 1} className="p-4 bg-slate-50 hover:bg-white rounded-2xl text-slate-400 hover:text-indigo-600 disabled:opacity-20 border border-slate-100 shadow-sm transition-colors"><ChevronDown className="w-5 h-5" /></button>
+                                                <button type="button" onClick={() => removeSlide(index)} className="p-4 bg-rose-50 hover:bg-rose-100 rounded-2xl text-rose-400 hover:text-rose-600 ml-3 border border-rose-100 shadow-sm transition-colors"><Trash2 className="w-5 h-5" /></button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-14">
+                                                <div className="lg:col-span-4 space-y-4">
+                                                    <div className="flex justify-between items-center ml-1">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Asset Configuration</label>
+                                                        <span className="text-[9px] font-black text-indigo-500 uppercase">4:5 Portrait</span>
+                                                    </div>
+                                                    <div className="aspect-[4/5] bg-slate-50 rounded-[2.5rem] overflow-hidden relative group border border-slate-100 shadow-inner">
+                                                        {slidePreviews[index] ? <img src={slidePreviews[index]!} className="w-full h-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-slate-200"><ImageIcon className="w-20 h-20" /></div>}
+                                                        <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md cursor-pointer text-white">
+                                                            <div className="bg-white/20 p-5 rounded-full mb-4 scale-75 group-hover:scale-100 transition-transform"><Upload className="w-8 h-8" /></div>
+                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Propogate Neural Asset</span>
+                                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'slide', index)} />
+                                                        </label>
+                                                    </div>
                                                 </div>
-                                            )}
-                                            <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
-                                                <Upload className="w-6 h-6 mb-1" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Upload</span>
-                                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'slide', index)} />
+
+                                                <div className="lg:col-span-8 space-y-8">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-14 lg:mt-0">
+                                                        <div className="space-y-3">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Supra-lead (Identity)</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[11px] font-black uppercase tracking-widest placeholder:text-slate-300 focus:ring-2 ring-indigo-500/10 transition-all" placeholder="e.g. ORGANIC LINEN" value={slide.subtitle} onChange={e => { const s = [...formData.heroSlides]; s[index].subtitle = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Emphasis Token (Italic)</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[11px] font-black uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" placeholder="e.g. LIMITED" value={slide.highlight} onChange={e => { const s = [...formData.heroSlides]; s[index].highlight = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                        </div>
+                                                        <div className="md:col-span-2 space-y-3">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Master Objective Heading</label>
+                                                            <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-2xl font-black tracking-tighter" placeholder="Collection Title" value={slide.title} onChange={e => { const s = [...formData.heroSlides]; s[index].title = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                        </div>
+                                                        <div className="md:col-span-2 space-y-3">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Narrative Composition</label>
+                                                            <textarea className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 transition-all" rows={4} placeholder="Detailed value proposition..." value={slide.description} onChange={e => { const s = [...formData.heroSlides]; s[index].description = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Primary Call to Action</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase tracking-widest" value={slide.buttonText} onChange={e => { const s = [...formData.heroSlides]; s[index].buttonText = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Routing Matrix (URL)</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[10px] font-black" value={slide.link} onChange={e => { const s = [...formData.heroSlides]; s[index].link = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 2. Impact Tab */}
+                        {activeTab === 'impact' && (
+                            <div className="space-y-12">
+                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
+                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Impact Narrative</h3>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Refine your brand's editorial impact story.</p>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+                                    <div className="space-y-10">
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Editorial Heading</label>
+                                            <input type="text" className="w-full p-7 bg-slate-50 border-none rounded-[2.5rem] text-xl font-black focus:ring-2 ring-indigo-500/10" placeholder="The Vision" value={formData.impact.title} onChange={e => setFormData({ ...formData, impact: { ...formData.impact, title: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Story Composition</label>
+                                            <textarea className="w-full p-8 bg-slate-50 border-none rounded-[3rem] text-sm font-medium leading-[2] resize-none focus:ring-2 ring-indigo-500/10 h-[400px]" placeholder="Craft your narrative..." value={formData.impact.description} onChange={e => setFormData({ ...formData, impact: { ...formData.impact, description: e.target.value } })} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Brand Asset (Editorial)</label>
+                                        <div className="aspect-[4/5] bg-slate-50 rounded-[4rem] overflow-hidden relative group shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all hover:shadow-indigo-500/10 border border-slate-100">
+                                            {impactPreview ? <img src={impactPreview} className="w-full h-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-slate-200"><ImageIcon className="w-24 h-24" /></div>}
+                                            <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-xl cursor-pointer text-white text-center p-10">
+                                                <div className="bg-white/20 p-6 rounded-full mb-6 transform scale-75 group-hover:scale-100 transition-transform"><Upload className="w-10 h-10" /></div>
+                                                <span className="text-xs font-black uppercase tracking-[0.25em] leading-relaxed">Transition Narrative Visual</span>
+                                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'impact')} />
                                             </label>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        )}
 
-                                    {/* Inputs */}
-                                    <div className="md:col-span-2 space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Supra Title</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-3 bg-white border border-slate-100 rounded-xl text-xs font-bold"
-                                                    value={slide.subtitle}
-                                                    onChange={e => {
-                                                        const newSlides = [...formData.heroSlides];
-                                                        newSlides[index].subtitle = e.target.value;
-                                                        setFormData({ ...formData, heroSlides: newSlides });
-                                                    }}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Highlight (Italic)</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-3 bg-white border border-slate-100 rounded-xl text-xs font-bold"
-                                                    value={slide.highlight}
-                                                    onChange={e => {
-                                                        const newSlides = [...formData.heroSlides];
-                                                        newSlides[index].highlight = e.target.value;
-                                                        setFormData({ ...formData, heroSlides: newSlides });
-                                                    }}
-                                                />
+                        {/* 3. Store Tab */}
+                        {activeTab === 'store' && (
+                            <div className="space-y-12">
+                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
+                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Core Configuration</h3>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Manage essential site metrics and aesthetics.</p>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                                    <div className="lg:col-span-4 space-y-10">
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Brand Ident (Logo)</label>
+                                            <div className="aspect-square bg-slate-50 rounded-[3rem] border border-slate-100 overflow-hidden relative group">
+                                                {logoPreview ? <img src={logoPreview} className="w-full h-full object-contain p-10" /> : <div className="absolute inset-0 flex items-center justify-center text-slate-200"><ImageIcon className="w-16 h-16" /></div>}
+                                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm cursor-pointer text-white text-center">
+                                                    <Upload className="w-7 h-7 mb-2" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest">Swap Logo</span>
+                                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} />
+                                                </label>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Main Head</label>
-                                            <input
-                                                type="text"
-                                                className="w-full p-3 bg-white border border-slate-100 rounded-xl text-base font-black tracking-tight"
-                                                value={slide.title}
-                                                onChange={e => {
-                                                    const newSlides = [...formData.heroSlides];
-                                                    newSlides[index].title = e.target.value;
-                                                    setFormData({ ...formData, heroSlides: newSlides });
-                                                }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                                            <textarea
-                                                className="w-full p-3 bg-white border border-slate-100 rounded-xl text-xs font-medium resize-none"
-                                                rows={2}
-                                                value={slide.description}
-                                                onChange={e => {
-                                                    const newSlides = [...formData.heroSlides];
-                                                    newSlides[index].description = e.target.value;
-                                                    setFormData({ ...formData, heroSlides: newSlides });
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Button text</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-3 bg-white border border-slate-100 rounded-xl text-xs font-bold"
-                                                    value={slide.buttonText}
-                                                    onChange={e => {
-                                                        const newSlides = [...formData.heroSlides];
-                                                        newSlides[index].buttonText = e.target.value;
-                                                        setFormData({ ...formData, heroSlides: newSlides });
-                                                    }}
-                                                />
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Latest Additions Count</label>
+                                            <div className="flex items-center gap-4 bg-slate-50 p-6 rounded-[2rem]">
+                                                <input type="range" min="3" max="12" step="1" className="flex-1 accent-indigo-600" value={formData.latestAdditions.count} onChange={e => setFormData({ ...formData, latestAdditions: { count: parseInt(e.target.value) } })} />
+                                                <span className="text-xl font-black text-indigo-600">{formData.latestAdditions.count}</span>
                                             </div>
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Link URL</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-3 bg-white border border-slate-100 rounded-xl text-xs font-bold lowercase"
-                                                    value={slide.link}
-                                                    onChange={e => {
-                                                        const newSlides = [...formData.heroSlides];
-                                                        newSlides[index].link = e.target.value;
-                                                        setFormData({ ...formData, heroSlides: newSlides });
-                                                    }}
-                                                />
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-8 space-y-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Global Store Name</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest" value={formData.siteSettings.siteName} onChange={e => setFormData({ ...formData, siteSettings: { ...formData.siteSettings, siteName: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Announcement State</label>
+                                                <div className="flex bg-slate-50 p-6 rounded-2xl items-center justify-between">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{formData.header.announcementEnabled ? 'Active' : 'Disabled'}</span>
+                                                    <button onClick={() => setFormData({ ...formData, header: { ...formData.header, announcementEnabled: !formData.header.announcementEnabled } })} className={`w-14 h-8 rounded-full transition-all relative ${formData.header.announcementEnabled ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                                                        <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${formData.header.announcementEnabled ? 'right-1' : 'left-1'}`} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="md:col-span-2 space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Top Bar Announcement Text</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold" value={formData.header.topBarText} onChange={e => setFormData({ ...formData, header: { ...formData.header, topBarText: e.target.value } })} />
+                                            </div>
+                                            <div className="md:col-span-2 space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">SEO Keyword Architecture</label>
+                                                <textarea className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-medium leading-relaxed resize-none" rows={4} placeholder="linen, organic, bedding, sustainable..." value={formData.siteSettings.seoKeywords} onChange={e => setFormData({ ...formData, siteSettings: { ...formData.siteSettings, seoKeywords: e.target.value } })} />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )}
 
-                        {formData.heroSlides.length === 0 && (
-                            <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-3xl">
-                                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">No slides configured</p>
-                                <button type="button" onClick={addSlide} className="text-indigo-600 font-bold text-xs uppercase tracking-widest hover:underline">+ Create first slide</button>
+                        {/* 4. Flash Sale Tab */}
+                        {activeTab === 'flash' && (
+                            <div className="space-y-12">
+                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Temporal Pulse</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Coordinate limited-availability event windows.</p>
+                                    </div>
+                                    <div className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${formData.flashSale.enabled ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                                        {formData.flashSale.enabled ? 'Pulse Live' : 'Pulse Terminated'}
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                                    <div className="lg:col-span-4 space-y-8">
+                                        <div className="bg-slate-900 rounded-[3rem] p-10 text-white space-y-6 shadow-2xl shadow-slate-200">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Status</span>
+                                                <button onClick={() => setFormData({ ...formData, flashSale: { ...formData.flashSale, enabled: !formData.flashSale.enabled } })} className={`w-12 h-6 rounded-full transition-all relative ${formData.flashSale.enabled ? 'bg-indigo-500' : 'bg-white/10'}`}>
+                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.flashSale.enabled ? 'right-1' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Expiration Matrix</label>
+                                                <input type="datetime-local" className="w-full bg-white/5 border-none rounded-2xl p-4 text-xs font-black text-white focus:ring-1 ring-indigo-500" value={formData.flashSale.endTime} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, endTime: e.target.value } })} />
+                                            </div>
+                                            <div className="pt-4 space-y-4">
+                                                <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                                    <h4 className="text-[10px] font-black uppercase text-indigo-400 tracking-widest mb-1">Preview Heading</h4>
+                                                    <p className="text-lg font-black tracking-tight">{formData.flashSale.title}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-8 space-y-10">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Focal Title</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest" value={formData.flashSale.title} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, title: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Supra Detail</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold" value={formData.flashSale.subtitle} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, subtitle: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Product Alignment Matrix</h4>
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto p-2 scrollbar-hide">
+                                                {allProducts.map(product => {
+                                                    const isSelected = formData.flashSale.products.includes(product._id);
+                                                    return (
+                                                        <button key={product._id} onClick={() => {
+                                                            const newProducts = isSelected
+                                                                ? formData.flashSale.products.filter(id => id !== product._id)
+                                                                : [...formData.flashSale.products, product._id];
+                                                            setFormData({ ...formData, flashSale: { ...formData.flashSale, products: newProducts } });
+                                                        }} className={`p-4 rounded-2xl text-left transition-all border ${isSelected ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 shadow-sm'}`}>
+                                                            <div className="aspect-square bg-slate-100 rounded-xl mb-3 overflow-hidden">
+                                                                <img src={product.images[0]?.url} className="w-full h-full object-cover" />
+                                                            </div>
+                                                            <p className="text-[9px] font-black uppercase tracking-tight truncate mb-1">{product.name}</p>
+                                                            <p className="text-[8px] font-bold text-slate-400">${product.price}</p>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
-                    </div>
-                </section>
 
-                {/* Divider */}
-                <div className="h-0.5 bg-slate-50 w-full"></div>
-
-                {/* 2. Impact Section */}
-                <section>
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
-                        <div className="w-1 h-3 bg-indigo-500"></div>
-                        Our Impact Block
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Impact Title</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
-                                    value={formData.impact.title}
-                                    onChange={e => setFormData({ ...formData, impact: { ...formData.impact, title: e.target.value } })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Description</label>
-                                <textarea
-                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-medium resize-none"
-                                    rows={5}
-                                    value={formData.impact.description}
-                                    onChange={e => setFormData({ ...formData, impact: { ...formData.impact, description: e.target.value } })}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Impact Image</label>
-                            <div className="aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden relative group border-2 border-dashed border-slate-200">
-                                {impactPreview ? (
-                                    <img src={impactPreview} alt="Preview" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                        <ImageIcon className="w-12 h-12" />
+                        {/* 5. Footer Tab */}
+                        {activeTab === 'footer' && (
+                            <div className="space-y-12">
+                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
+                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Boundary Analytics</h3>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Configure base components and social network pointers.</p>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                                    <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-12">
+                                        <div className="space-y-10">
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Global Copyright Formula</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-[11px] font-bold" value={formData.footer.copyrightText} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, copyrightText: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Newsletter Incentive</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-[11px] font-bold" value={formData.footer.newsletterText} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, newsletterText: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Footer Narrative</label>
+                                                <textarea className="w-full p-6 bg-slate-50 border-none rounded-3xl text-xs font-medium resize-none leading-relaxed" rows={6} value={formData.footer.description} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, description: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                        <div className="bg-indigo-50/30 p-10 rounded-[4rem] border border-indigo-100/50 space-y-8">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <Share2 className="w-5 h-5 text-indigo-600" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-900">Social Graph Projections</h4>
+                                            </div>
+                                            {Object.entries(formData.footer.socialLinks).map(([key, value]) => (
+                                                <div key={key} className="space-y-2">
+                                                    <label className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.2em] ml-1">{key} Matrix</label>
+                                                    <div className="flex bg-white rounded-2xl overflow-hidden shadow-sm border border-indigo-100/50">
+                                                        <div className="p-4 bg-indigo-50 text-indigo-600 border-r border-indigo-100"><Share2 className="w-4 h-4" /></div>
+                                                        <input type="text" className="flex-1 p-4 border-none text-[11px] font-bold text-slate-700" value={value} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, socialLinks: { ...formData.footer.socialLinks, [key]: e.target.value } } })} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                )}
-                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-center">
-                                    <Upload className="w-8 h-8 mb-2" />
-                                    <span className="text-xs font-black uppercase tracking-widest px-4">Change Story Image</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'impact')} />
-                                </label>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </section>
+                        )}
 
-                {/* Footer Section (Collapsed for focus) */}
-                <section className="pt-8 border-t border-slate-100">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
-                        <div className="w-1 h-3 bg-indigo-500"></div>
-                        Basics & Footer
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Site Name</label>
-                            <input
-                                type="text"
-                                className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
-                                value={formData.siteSettings.siteName}
-                                onChange={e => setFormData({ ...formData, siteSettings: { ...formData.siteSettings, siteName: e.target.value } })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Copyright Line</label>
-                            <input
-                                type="text"
-                                className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
-                                value={formData.footer.copyrightText}
-                                onChange={e => setFormData({ ...formData, footer: { ...formData.footer, copyrightText: e.target.value } })}
-                            />
-                        </div>
-                    </div>
-                </section>
-            </form>
+                        {/* 6. Legal Tab */}
+                        {activeTab === 'legal' && (
+                            <div className="space-y-12">
+                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
+                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Legal Center</h3>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Finalize contractual and privacy frameworks.</p>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                                    {/* Privacy Policy */}
+                                    <div className="bg-white border border-slate-100 rounded-[3rem] p-10 space-y-8 shadow-sm transition-all hover:shadow-indigo-50/50">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-indigo-50 p-4 rounded-2xl text-indigo-600"><ShieldCheck className="w-6 h-6" /></div>
+                                                <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Privacy Policy</h4>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Effective Chronology</label>
+                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" value={legalData.privacy.effectiveDate} onChange={e => setLegalData({ ...legalData, privacy: { ...legalData.privacy, effectiveDate: e.target.value } })} placeholder="e.g. Feb 8, 2026" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contractual Body (HTML Supported)</label>
+                                            <textarea className="w-full p-7 bg-slate-50 border-none rounded-3xl text-sm font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 h-[500px]" value={legalData.privacy.body} onChange={e => setLegalData({ ...legalData, privacy: { ...legalData.privacy, body: e.target.value } })} placeholder="<h1>Heading</h1><p>Body copy...</p>" />
+                                        </div>
+                                    </div>
+
+                                    {/* Terms of Service */}
+                                    <div className="bg-white border border-slate-100 rounded-[3rem] p-10 space-y-8 shadow-sm transition-all hover:shadow-slate-50/50">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-slate-900 p-4 rounded-2xl text-white"><Layout className="w-6 h-6" /></div>
+                                                <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Terms of Service</h4>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Latest Revision</label>
+                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" value={legalData.terms.lastUpdated} onChange={e => setLegalData({ ...legalData, terms: { ...legalData.terms, lastUpdated: e.target.value } })} placeholder="e.g. Feb 8, 2026" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contractual Body (HTML Supported)</label>
+                                            <textarea className="w-full p-7 bg-slate-50 border-none rounded-3xl text-sm font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 h-[500px]" value={legalData.terms.body} onChange={e => setLegalData({ ...legalData, terms: { ...legalData.terms, body: e.target.value } })} placeholder="<h1>Heading</h1><p>Body copy...</p>" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
         </div>
     );
 };

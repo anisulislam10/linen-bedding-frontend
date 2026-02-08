@@ -38,6 +38,8 @@ import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import ShippingReturns from './pages/ShippingReturns';
 import About from './pages/About';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 
 const ScrollToTop = () => {
@@ -80,6 +82,8 @@ const AppContent = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/shipping-returns" element={<ShippingReturns />} />
           <Route path="/about" element={<About />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
 
           <Route path="/admin/login" element={<AdminLogin />} />
 
