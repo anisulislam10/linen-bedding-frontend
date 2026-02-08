@@ -10,9 +10,10 @@ import { RegisterForm } from '../auth/RegisterForm';
 import { productService } from '../../services/productService';
 import { contentService } from '../../services/contentService';
 import { orderService } from '../../services/orderService';
-import { Order } from '../../types';
+import { Order, Product } from '../../types';
 import ScrollProgressBar from './ScrollProgressBar';
 import ScrollToTop from './ScrollToTop';
+import Loader from './Loader';
 
 const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,6 +34,8 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [trackingError, setTrackingError] = useState<string | null>(null);
 
   const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const announcements = headerConfig.topBarText.split('|').map(t => t.trim());
 
@@ -109,6 +112,27 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchQuery.trim().length >= 2) {
+        setIsSearching(true);
+        try {
+          const results = await productService.searchProducts(searchQuery);
+          setSuggestions(results);
+        } catch (err) {
+          console.error('Search failed', err);
+          setSuggestions([]);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -296,9 +320,62 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
                 </form>
               </div>
 
+
+              {/* Search results/suggestions */}
+              {(isSearching || suggestions.length > 0 || (searchQuery.length >= 2 && !isSearching)) && (
+                <div className="max-h-[400px] overflow-y-auto border-b border-gray-100">
+                  {isSearching ? (
+                    <div className="p-12 flex flex-col items-center justify-center text-gray-400">
+                      <Loader size="md" color="#4A5D4E" />
+                      <p className="mt-4 text-sm font-medium animate-pulse uppercase tracking-widest">Scanning inventory...</p>
+                    </div>
+                  ) : suggestions.length > 0 ? (
+                    <div className="py-2">
+                      <p className="px-6 py-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Product Matches</p>
+                      {suggestions.map((product) => (
+                        <button
+                          key={product._id}
+                          onClick={() => {
+                            navigate(`/product/${product._id}`);
+                            setSearchOpen(false);
+                            setSearchQuery('');
+                          }}
+                          className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group text-left"
+                        >
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            {product.images?.[0]?.url ? (
+                              <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                <Search className="w-4 h-4" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-gray-900 truncate group-hover:text-sage transition-colors">{product.name}</h4>
+                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mt-0.5">
+                              {typeof product.category === 'string' ? product.category : product.category?.name}
+                            </p>
+                          </div>
+                          <div className="text-sm font-black text-gray-900">${product.price}</div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : searchQuery.length >= 2 ? (
+                    <div className="p-12 text-center">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-50 mb-4">
+                        <Search className="w-6 h-6 text-gray-300" />
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 uppercase tracking-widest"></p>
+                      <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">No products found matching "{searchQuery}"</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
               {/* Quick Links/Suggestions */}
-              <div className="p-6">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Popular Searches</p>
+              <div className="p-8">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Trending Collections</p>
                 <div className="flex flex-wrap gap-2">
                   {['Bedding', 'Towels', 'Organic Cotton', 'Linen Sheets'].map((term) => (
                     <button
@@ -308,7 +385,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
                         navigate(`/products?q=${encodeURIComponent(term)}`);
                         setSearchOpen(false);
                       }}
-                      className="px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-full transition-colors"
+                      className="px-6 py-2.5 text-xs font-black uppercase tracking-widest bg-gray-50 hover:bg-black hover:text-white text-gray-700 rounded-full transition-all duration-300"
                     >
                       {term}
                     </button>
