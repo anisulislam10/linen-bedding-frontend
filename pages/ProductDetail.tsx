@@ -219,23 +219,23 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-t border-gray-100 pt-20 ">
-        <div className="flex space-x-8 mb-10 border-b border-gray-100">
+      <div className="border-t border-gray-100 pt-12 sm:pt-16 md:pt-20">
+        <div className="flex flex-wrap gap-4 sm:gap-6 md:space-x-8 mb-6 sm:mb-8 md:mb-10 border-b border-gray-100 pb-2">
           {['Description', 'Specifications', 'Reviews'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab.toLowerCase())}
-              className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${activeTab === tab.toLowerCase() ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-900'}`}
+              className={`pb-2 sm:pb-3 md:pb-4 text-xs sm:text-sm font-black uppercase tracking-widest transition-all relative ${activeTab === tab.toLowerCase() ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-900'}`}
             >
               {tab}
               {activeTab === tab.toLowerCase() && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-600 rounded-t-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-indigo-600 rounded-t-full" />
               )}
             </button>
           ))}
         </div>
 
-        <div className="max-w-4xl leading-relaxed text-gray-500 text-lg">
+        <div className="max-w-4xl leading-relaxed text-gray-500 text-sm sm:text-base md:text-lg">
           {activeTab === 'description' && (
             <div className="space-y-6">
               <p>{product.description}</p>
