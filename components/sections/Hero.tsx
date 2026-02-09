@@ -120,16 +120,16 @@ const Hero: React.FC<{ cmsData?: any }> = ({ cmsData }) => {
                     </div>
 
                     {/* Content */}
-                    <div className="relative h-full flex flex-col justify-center items-center text-center px-6 max-w-5xl mx-auto">
+                    <div className="relative h-full flex flex-col justify-center items-center text-center px-6 max-w-5xl mx-auto pt-8">
                         <div className={`transition-all duration-700 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                            <span className="text-white/90 text-xs sm:text-sm md:text-base uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-3 sm:mb-4 block font-medium">
+                            <span className="text-white/90 text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-3 sm:mb-4 block font-medium">
                                 {slide.subtitle}
                             </span>
-                            <h1 className="text-white text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-serif font-medium mb-4 sm:mb-6 leading-tight shadow-sm">
+                            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-medium mb-4 sm:mb-6 leading-tight shadow-sm">
                                 {slide.title} <br />
                                 <span className="italic text-white/90 font-light">{slide.highlight}</span>
                             </h1>
-                            <p className="text-white/80 text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 font-sans leading-relaxed px-4 sm:px-0">
+                            <p className="text-white/80 text-xs sm:text-sm md:text-base lg:text-base max-w-2xl mx-auto mb-8 sm:mb-10 font-sans leading-relaxed px-4 sm:px-0">
                                 {slide.description}
                             </p>
 
