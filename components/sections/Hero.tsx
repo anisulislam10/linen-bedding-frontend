@@ -122,14 +122,14 @@ const Hero: React.FC<{ cmsData?: any }> = ({ cmsData }) => {
                     {/* Content */}
                     <div className="relative h-full flex flex-col justify-center items-center text-center px-6 max-w-5xl mx-auto">
                         <div className={`transition-all duration-700 transform ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                            <span className="text-white/90 text-sm md:text-base uppercase tracking-[0.2em] mb-4 block font-medium">
+                            <span className="text-white/90 text-xs sm:text-sm md:text-base uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-3 sm:mb-4 block font-medium">
                                 {slide.subtitle}
                             </span>
-                            <h1 className="text-white text-5xl md:text-7xl lg:text-8xl font-serif font-medium mb-6 leading-tight shadow-sm">
+                            <h1 className="text-white text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-serif font-medium mb-4 sm:mb-6 leading-tight shadow-sm">
                                 {slide.title} <br />
                                 <span className="italic text-white/90 font-light">{slide.highlight}</span>
                             </h1>
-                            <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-sans leading-relaxed">
+                            <p className="text-white/80 text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 font-sans leading-relaxed px-4 sm:px-0">
                                 {slide.description}
                             </p>
 
@@ -138,14 +138,14 @@ const Hero: React.FC<{ cmsData?: any }> = ({ cmsData }) => {
                                     href={slide.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-block bg-white text-primary px-10 py-4 rounded-sm text-sm font-bold uppercase tracking-widest hover:bg-sage hover:text-white transition-all duration-300 transform hover:scale-105"
+                                    className="inline-block bg-white text-primary px-6 sm:px-10 py-3 sm:py-4 rounded-sm text-xs sm:text-sm font-bold uppercase tracking-widest hover:bg-sage hover:text-white transition-all duration-300 transform hover:scale-105"
                                 >
                                     {slide.buttonText}
                                 </a>
                             ) : (
                                 <Link
                                     to={slide.link}
-                                    className="inline-block bg-white text-primary px-10 py-4 rounded-sm text-sm font-bold uppercase tracking-widest hover:bg-sage hover:text-white transition-all duration-300 transform hover:scale-105"
+                                    className="inline-block bg-white text-primary px-6 sm:px-10 py-3 sm:py-4 rounded-sm text-xs sm:text-sm font-bold uppercase tracking-widest hover:bg-sage hover:text-white transition-all duration-300 transform hover:scale-105"
                                 >
                                     {slide.buttonText}
                                 </Link>

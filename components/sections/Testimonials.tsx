@@ -60,11 +60,11 @@ const Testimonials: React.FC = () => {
         <section className="py-20 bg-sand/30 overflow-hidden">
             <div className="container mx-auto px-4">
                 {/* Section Header */}
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-serif text-primary mb-4">
+                <div className="text-center mb-8 sm:mb-12">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-primary mb-3 sm:mb-4">
                         What Our Customers Say
                     </h2>
-                    <p className="text-lg text-primary/70 max-w-2xl mx-auto">
+                    <p className="text-base sm:text-lg text-primary/70 max-w-2xl mx-auto px-4">
                         Discover why thousands choose us for sustainable luxury
                     </p>
                 </div>
@@ -76,7 +76,7 @@ const Testimonials: React.FC = () => {
                     onMouseLeave={() => setIsPaused(false)}
                 >
                     {/* Main Slide Area */}
-                    <div className="relative overflow-hidden min-h-[400px] flex items-center">
+                    <div className="relative overflow-hidden min-h-[350px] sm:min-h-[400px] flex items-center">
                         <div
                             className="flex transition-transform duration-700 ease-out w-full"
                             style={{ transform: `translateX(-${current * 100}%)` }}
@@ -86,39 +86,39 @@ const Testimonials: React.FC = () => {
                                     key={testimonial._id}
                                     className="w-full flex-shrink-0 px-4"
                                 >
-                                    <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg relative mx-auto max-w-3xl">
-                                        <div className="absolute top-8 right-8 opacity-10">
-                                            <Quote className="w-16 h-16 text-sage" />
+                                    <div className="bg-white p-6 sm:p-8 md:p-12 rounded-2xl shadow-lg relative mx-auto max-w-3xl">
+                                        <div className="absolute top-6 sm:top-8 right-6 sm:right-8 opacity-10">
+                                            <Quote className="w-12 h-12 sm:w-16 sm:h-16 text-sage" />
                                         </div>
 
                                         <div className="flex flex-col items-center text-center">
-                                            <div className="flex gap-1 mb-6">
+                                            <div className="flex gap-1 mb-4 sm:mb-6">
                                                 {Array.from({ length: testimonial.rating }).map((_, i) => (
-                                                    <Star key={i} className="w-5 h-5 fill-current text-muted-gold" />
+                                                    <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-current text-muted-gold" />
                                                 ))}
                                             </div>
 
-                                            <p className="text-xl md:text-2xl text-primary/80 mb-8 italic leading-relaxed font-serif">
+                                            <p className="text-lg sm:text-xl md:text-2xl text-primary/80 mb-6 sm:mb-8 italic leading-relaxed font-serif">
                                                 "{testimonial.content}"
                                             </p>
 
-                                            <div className="flex flex-col items-center gap-3">
+                                            <div className="flex flex-col items-center gap-2 sm:gap-3">
                                                 {testimonial.avatar ? (
                                                     <img
                                                         src={testimonial.avatar}
                                                         alt={testimonial.name}
-                                                        className="w-16 h-16 rounded-full object-cover border-2 border-sage/20"
+                                                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-sage/20"
                                                     />
                                                 ) : (
-                                                    <div className="w-16 h-16 rounded-full bg-sage/10 flex items-center justify-center text-sage font-serif text-2xl font-bold">
+                                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-sage/10 flex items-center justify-center text-sage font-serif text-xl sm:text-2xl font-bold">
                                                         {testimonial.name.charAt(0)}
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <h4 className="font-serif font-bold text-lg text-primary">
+                                                    <h4 className="font-serif font-bold text-base sm:text-lg text-primary">
                                                         {testimonial.name}
                                                     </h4>
-                                                    <p className="text-sm text-primary/60">
+                                                    <p className="text-xs sm:text-sm text-primary/60">
                                                         {testimonial.role}
                                                         {testimonial.company && `, ${testimonial.company}`}
                                                     </p>
@@ -134,19 +134,19 @@ const Testimonials: React.FC = () => {
                     {/* Navigation Buttons */}
                     <button
                         onClick={prevSlide}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 bg-white/80 hover:bg-white p-3 rounded-full shadow-md text-primary transition-all hover:scale-110 z-10"
+                        className="absolute left-0 sm:left-2 md:-left-4 lg:-left-12 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-md text-primary transition-all hover:scale-110 z-10"
                         aria-label="Previous testimonial"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
                     <button
                         onClick={nextSlide}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 bg-white/80 hover:bg-white p-3 rounded-full shadow-md text-primary transition-all hover:scale-110 z-10"
+                        className="absolute right-0 sm:right-2 md:-right-4 lg:-right-12 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-md text-primary transition-all hover:scale-110 z-10"
                         aria-label="Next testimonial"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                     </button>

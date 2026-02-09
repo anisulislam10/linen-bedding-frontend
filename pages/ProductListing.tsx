@@ -64,11 +64,11 @@ const ProductListing: React.FC = () => {
   }
 
   return (
-    <div className="bg-white min-h-screen pt-12">
+    <div className="bg-white min-h-screen pt-24 sm:pt-28 md:pt-32">
       <main className="p-6 lg:p-12">
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-24">
           <div>
-            <h1 className="text-6xl lg:text-9xl font-black text-gray-950 tracking-tighter leading-none mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-9xl font-black text-gray-950 tracking-tighter leading-none mb-4 sm:mb-6">
               {initialCategory === 'All' ? 'Complete' : initialCategory}
             </h1>
             <div className="flex items-center space-x-4">

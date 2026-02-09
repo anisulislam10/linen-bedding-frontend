@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, User, Menu, ArrowRight, X, LogOut, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, ArrowRight, X, LogOut, ChevronDown, LogIn } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -28,6 +28,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const [headerConfig, setHeaderConfig] = useState({ topBarText: '', announcementEnabled: true });
   const [siteSettings, setSiteSettings] = useState<{ siteName: string; logoUrl: string }>({ siteName: 'Avenly by Huma', logoUrl: '' });
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [trackingOrderId, setTrackingOrderId] = useState('');
   const [trackingResult, setTrackingResult] = useState<Order | null>(null);
   const [trackingLoading, setTrackingLoading] = useState(false);
@@ -336,7 +337,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
                         <button
                           key={product._id}
                           onClick={() => {
-                            navigate(`/product/${product._id}`);
+                            navigate(`/products/${product.slug || product._id}`);
                             setSearchOpen(false);
                             setSearchQuery('');
                           }}
@@ -408,40 +409,63 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
         className={`fixed top-0 left-0 h-full w-[85%] max-w-sm bg-sand z-[160] lg:hidden transform transition-transform duration-500 ease-out shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
-        <div className="flex flex-col h-full p-8 px-10">
-          <div className="flex items-center justify-between mb-16">
-            <span className="text-xl font-serif font-bold text-primary">{siteSettings.siteName}</span>
+        <div className="flex flex-col h-full p-6 sm:p-8 px-8 sm:px-10">
+          <div className="flex items-center justify-between mb-10 sm:mb-16">
+            <span className="text-lg sm:text-xl font-serif font-bold text-primary">{siteSettings.siteName}</span>
             <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2">
               <X className="h-6 w-6 text-primary" />
             </button>
           </div>
 
-          <nav className="flex flex-col space-y-8">
-            <Link to="/" className="text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-            <Link to="/products" className="text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Shop All</Link>
-            <Link to="/about" className="text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Our Story</Link>
-            {categories.filter(c => c !== 'All').map((cat) => (
-              <Link
-                key={cat}
-                to={`/products?category=${cat}`}
-                className="text-2xl font-serif text-primary hover:text-sage transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
+          <nav className="flex flex-col space-y-5 sm:space-y-8">
+            <Link to="/" className="text-xl sm:text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+            <Link to="/products" className="text-xl sm:text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Shop All</Link>
+            <Link to="/about" className="text-xl sm:text-2xl font-serif text-primary hover:text-sage transition-colors" onClick={() => setMobileMenuOpen(false)}>Our Story</Link>
+
+            {/* Categories Dropdown */}
+            <div className="flex flex-col">
+              <button
+                onClick={() => setMobileCategoriesOpen(!mobileCategoriesOpen)}
+                className="text-xl sm:text-2xl font-serif text-primary hover:text-sage transition-colors flex items-center justify-between"
               >
-                {cat}
-              </Link>
-            ))}
+                <span>Categories</span>
+                <ChevronDown className={`h-5 w-5 transition-transform duration-300 ${mobileCategoriesOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {mobileCategoriesOpen && (
+                <div className="flex flex-col space-y-3 mt-3 ml-4 pl-4 border-l-2 border-sage/20">
+                  {categories.filter(c => c !== 'All').map((cat) => (
+                    <Link
+                      key={cat}
+                      to={`/products?category=${cat}`}
+                      className="text-base sm:text-lg font-sans text-primary/80 hover:text-sage transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {cat}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
-          <div className="mt-auto pt-8 border-t border-primary/10 space-y-6">
+          <div className="mt-auto pt-6 sm:pt-8 border-t border-primary/10 space-y-4 sm:space-y-6">
             {!isLoggedIn && (
-              <button onClick={() => { setMobileMenuOpen(false); setShowLogin(true); }} className="text-lg font-sans text-primary block">
-                Login / Register
+              <button onClick={() => { setMobileMenuOpen(false); setShowLogin(true); }} className="text-base sm:text-lg font-sans text-primary block flex items-center gap-2">
+                <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Login / Register</span>
               </button>
             )}
             {isLoggedIn && (
-              <div className="flex flex-col gap-4">
-                <Link to="/profile" className="text-lg font-sans text-primary">My Account</Link>
-                <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-lg font-sans text-red-500 text-left">Logout</button>
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <Link to="/profile" className="text-base sm:text-lg font-sans text-primary flex items-center gap-2">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>My Account</span>
+                </Link>
+                <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-base sm:text-lg font-sans text-red-500 text-left flex items-center gap-2">
+                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>Logout</span>
+                </button>
               </div>
             )}
           </div>
