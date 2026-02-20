@@ -107,3 +107,15 @@ export interface Review {
   helpfulVotes: number;
   createdAt: Date;
 }
+
+export interface GatewaySetting {
+  _id?: string;
+  gateway: 'stripe' | 'paypal' | 'cod';
+  mode: 'test' | 'live';
+  isActive: boolean;
+  testSecretKey?: string;
+  testPublishableKey?: string;
+  liveSecretKey?: string;
+  livePublishableKey?: string;
+}
+

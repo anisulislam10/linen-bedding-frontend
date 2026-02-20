@@ -11,7 +11,8 @@ import {
     MessageSquare,
     Megaphone,
     Heart,
-    MessageCircle
+    MessageCircle,
+    RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,12 +23,14 @@ const AdminSidebar: React.FC = () => {
         { title: 'Dashboard', path: '/admin', icon: LayoutDashboard },
         { title: 'Products', path: '/admin/products', icon: Package },
         { title: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+        { title: 'Return Requests', path: '/admin/returns', icon: RotateCcw },
         { title: 'Users', path: '/admin/users', icon: Users },
         { title: 'Categories', path: '/admin/categories', icon: Tag },
         { title: 'Reviews', path: '/admin/reviews', icon: MessageSquare },
         { title: 'Testimonials', path: '/admin/testimonials', icon: MessageCircle },
         { title: 'Wishlist', path: '/admin/wishlist', icon: Heart },
         { title: 'Ad Management', path: '/admin/ads', icon: Megaphone },
+        // { title: 'Stock Inventory', path: '/admin/inventory', icon: Package },
         { title: 'Site Setting', path: '/admin/content', icon: LayoutDashboard }, // Reusing icon for now or use 'FileText' if available
 
     ];

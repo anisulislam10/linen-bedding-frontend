@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Layout, Info, ShieldCheck, ShoppingCart, Share2, Type, Clock, AlertTriangle } from 'lucide-react';
+import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Layout, Info, ShieldCheck, ShoppingCart, Share2, Type, Clock, AlertTriangle, CreditCard } from 'lucide-react';
 import { contentService } from '../../services/contentService';
 import { productService } from '../../services/productService';
-import { Product } from '../../types';
+import { paymentService } from '../../services/paymentService';
+import { Product, GatewaySetting } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import Loader from '../../components/common/Loader';
+import toast from 'react-hot-toast';
 
 interface HeroSlide {
     title: string;
@@ -20,7 +22,9 @@ const ContentManagement: React.FC = () => {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer'>('hero');
+    const [activeTab, setActiveTab] = useState<'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer' | 'payment'>('hero');
+
+    const [paymentSettings, setPaymentSettings] = useState<GatewaySetting[]>([]);
 
     // Legal Content States
     const [legalData, setLegalData] = useState({
@@ -99,13 +103,15 @@ const ContentManagement: React.FC = () => {
     const fetchContent = async () => {
         try {
             setLoading(true);
-            const [content, productsData, privacyData, termsData] = await Promise.all([
+            const [content, productsData, privacyData, termsData, paymentData] = await Promise.all([
                 contentService.getContent('home_page'),
                 productService.getProducts({ limit: 100 }),
                 contentService.getContent('privacy_policy').catch(() => null),
-                contentService.getContent('terms_service').catch(() => null)
+                contentService.getContent('terms_service').catch(() => null),
+                paymentService.getSettings().catch(() => [])
             ]);
             setAllProducts(productsData.products);
+            setPaymentSettings(paymentData);
 
             if (privacyData) setLegalData(prev => ({ ...prev, privacy: privacyData }));
             if (termsData) setLegalData(prev => ({ ...prev, terms: termsData }));
@@ -250,9 +256,24 @@ const ContentManagement: React.FC = () => {
             const data = new FormData();
             data.append('content', JSON.stringify(type === 'privacy' ? legalData.privacy : legalData.terms));
             await contentService.updateContent(identifier, data);
-            alert(`${type === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} updated`);
+            toast.success(`${type === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} updated`);
         } catch (err: any) {
-            alert('Update failed: ' + err.message);
+            toast.error('Update failed: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handlePaymentSave = async (gateway: string) => {
+        const setting = paymentSettings.find(s => s.gateway === gateway);
+        if (!setting) return;
+
+        setSaving(true);
+        try {
+            await paymentService.updateSetting(setting);
+            toast.success(`${gateway.toUpperCase()} configuration updated`);
+        } catch (err: any) {
+            toast.error('Failed to update payment settings: ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -287,7 +308,7 @@ const ContentManagement: React.FC = () => {
 
             // Fetch again to ensure sync
             fetchContent();
-            alert('Content updated successfully');
+            toast.success('Content updated successfully');
         } catch (err: any) {
             alert('Failed to update content: ' + err.message);
         } finally {
@@ -299,8 +320,8 @@ const ContentManagement: React.FC = () => {
         <button
             onClick={() => setActiveTab(id)}
             className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all min-w-[160px] ${activeTab === id
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
-                    : 'bg-white text-slate-400 hover:text-slate-900 shadow-sm border border-slate-50'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
+                : 'bg-white text-slate-400 hover:text-slate-900 shadow-sm border border-slate-50'
                 }`}
         >
             <Icon className="w-4 h-4" />
@@ -354,6 +375,7 @@ const ContentManagement: React.FC = () => {
                 <TabButton id="store" label="Store Core" icon={ShoppingCart} />
                 <TabButton id="flash" label="Flash Sale" icon={Clock} />
                 <TabButton id="footer" label="Footer/Social" icon={Share2} />
+                <TabButton id="payment" label="Payment Center" icon={CreditCard} />
                 <TabButton id="legal" label="Legal Center" icon={ShieldCheck} />
             </div>
 
@@ -694,6 +716,108 @@ const ContentManagement: React.FC = () => {
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contractual Body (HTML Supported)</label>
                                             <textarea className="w-full p-7 bg-slate-50 border-none rounded-3xl text-sm font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 h-[500px]" value={legalData.terms.body} onChange={e => setLegalData({ ...legalData, terms: { ...legalData.terms, body: e.target.value } })} placeholder="<h1>Heading</h1><p>Body copy...</p>" />
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 7. Payment Tab */}
+                        {activeTab === 'payment' && (
+                            <div className="space-y-12">
+                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Payment Architecture</h3>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Configure gateway protocols and credential matrix.</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-10">
+                                    {/* Stripe Configuration */}
+                                    {['stripe'].map(gw => {
+                                        const setting = paymentSettings.find(s => s.gateway === gw) || {
+                                            gateway: gw as any,
+                                            mode: 'test',
+                                            isActive: false,
+                                            testSecretKey: '',
+                                            testPublishableKey: '',
+                                            liveSecretKey: '',
+                                            livePublishableKey: ''
+                                        };
+
+                                        const updateGW = (updates: Partial<GatewaySetting>) => {
+                                            const exists = paymentSettings.find(s => s.gateway === gw);
+                                            if (exists) {
+                                                setPaymentSettings(paymentSettings.map(s => s.gateway === gw ? { ...s, ...updates } : s));
+                                            } else {
+                                                setPaymentSettings([...paymentSettings, { ...setting, ...updates }]);
+                                            }
+                                        };
+
+                                        return (
+                                            <div key={gw} className="bg-white border border-slate-100 rounded-[3rem] p-10 relative group transition-all hover:shadow-2xl hover:shadow-indigo-50/30">
+                                                <div className="flex justify-between items-center mb-10">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="bg-indigo-600 p-4 rounded-2xl text-white shadow-lg shadow-indigo-100"><CreditCard className="w-8 h-8" /></div>
+                                                        <div>
+                                                            <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{gw.toUpperCase()} Gateway</h4>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <div className={`w-2 h-2 rounded-full ${setting.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{setting.isActive ? 'Operational' : 'Offline'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                                                            <button onClick={() => updateGW({ mode: 'test' })} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${setting.mode === 'test' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Test Mode</button>
+                                                            <button onClick={() => updateGW({ mode: 'live' })} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${setting.mode === 'live' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Live Mode</button>
+                                                        </div>
+                                                        <button onClick={() => updateGW({ isActive: !setting.isActive })} className={`w-14 h-8 rounded-full transition-all relative ${setting.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                                                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${setting.isActive ? 'right-1' : 'left-1'}`} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                                    <div className="space-y-8 p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100/50">
+                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div> Test Credentials</h5>
+                                                        <div className="space-y-4">
+                                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Publishable Key</label>
+                                                            <input type="password" placeholder="pk_test_..." className="w-full p-4 bg-white border border-slate-100 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.testPublishableKey} onChange={e => updateGW({ testPublishableKey: e.target.value })} />
+                                                        </div>
+                                                        <div className="space-y-4">
+                                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Secret Key</label>
+                                                            <input type="password" placeholder="sk_test_..." className="w-full p-4 bg-white border border-slate-100 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.testSecretKey} onChange={e => updateGW({ testSecretKey: e.target.value })} />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-8 p-8 bg-indigo-50/20 rounded-[2.5rem] border border-indigo-100/30">
+                                                        <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2"><div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div> Live Credentials</h5>
+                                                        <div className="space-y-4">
+                                                            <label className="text-[9px] font-black text-indigo-500/60 uppercase tracking-widest ml-1">Publishable Key</label>
+                                                            <input type="password" placeholder="pk_live_..." className="w-full p-4 bg-white border border-indigo-100/50 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.livePublishableKey} onChange={e => updateGW({ livePublishableKey: e.target.value })} />
+                                                        </div>
+                                                        <div className="space-y-4">
+                                                            <label className="text-[9px] font-black text-indigo-500/60 uppercase tracking-widest ml-1">Secret Key</label>
+                                                            <input type="password" placeholder="sk_live_..." className="w-full p-4 bg-white border border-indigo-100/50 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.liveSecretKey} onChange={e => updateGW({ liveSecretKey: e.target.value })} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-10 flex justify-end">
+                                                    <button onClick={() => handlePaymentSave(gw)} disabled={saving} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center gap-3 disabled:opacity-50">
+                                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                                        Initialize Protocol
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Future gateways placeholder */}
+                                    <div className="border-2 border-dashed border-slate-100 rounded-[3rem] p-16 flex flex-col items-center justify-center text-center opacity-50">
+                                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6"><Plus className="w-10 h-10 text-slate-300" /></div>
+                                        <h4 className="text-xl font-black text-slate-400 uppercase tracking-tight">Expand Gateway Matrix</h4>
+                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-2">PayPal, Klarna, and COD protocols upcoming.</p>
                                     </div>
                                 </div>
                             </div>

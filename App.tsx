@@ -27,6 +27,7 @@ import ContentManagement from './pages/admin/ContentManagement';
 import AdManagement from './pages/admin/AdManagement';
 import WishlistManagement from './pages/admin/WishlistManagement';
 import TestimonialManagement from './pages/admin/TestimonialManagement';
+import ReturnManagement from './pages/admin/ReturnManagement';
 import AdminLogin from './pages/admin/AdminLogin';
 import TrackOrder from './pages/TrackOrder';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -92,7 +93,9 @@ const AppContent = () => {
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<DashboardOverview />} />
               <Route path="/admin/products" element={<ProductManagement />} />
+              <Route path="/admin/inventory" element={<ProductManagement />} />
               <Route path="/admin/orders" element={<OrderManagement />} />
+              <Route path="/admin/returns" element={<ReturnManagement />} />
               <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/admin/categories" element={<CategoryManagement />} />
               <Route path="/admin/reviews" element={<ReviewManagement />} />

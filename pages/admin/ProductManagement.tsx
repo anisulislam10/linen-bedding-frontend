@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Plus,
     Search,
     Filter,
-    MoreVertical,
     Edit2,
     Trash2,
-    ExternalLink,
     Loader2
 } from 'lucide-react';
 import { productService } from '../../services/productService';
@@ -14,6 +13,8 @@ import { Product } from '../../types';
 import ProductModal from '../../components/admin/ProductModal';
 
 const ProductManagement: React.FC = () => {
+    const location = useLocation();
+    const isInventoryView = location.pathname === '/admin/inventory';
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -69,20 +70,25 @@ const ProductManagement: React.FC = () => {
             </div>
         );
     }
-
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Inventory Ledger</h1>
-                    <p className="text-slate-400 text-sm font-medium">Manage and refine your product collective.</p>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">
+                        {isInventoryView ? 'Inventory Ledger' : 'Product Collective'}
+                    </h1>
+                    <p className="text-slate-400 text-sm font-medium">
+                        {isInventoryView
+                            ? 'Monitor and calibrate artifact quantities.'
+                            : 'Manage and refine your product collective.'}
+                    </p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
                     className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-200"
                 >
                     <Plus className="w-4 h-4" />
-                    <span>Inscribe New Object</span>
+                    <span>{isInventoryView ? 'Inscribe New Stock' : 'Inscribe New Object'}</span>
                 </button>
             </div>
 

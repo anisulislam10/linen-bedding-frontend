@@ -142,7 +142,24 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-4xl font-black text-gray-900 mb-8">${product.price.toFixed(2)}</p>
+          <p className="text-4xl font-black text-gray-900 mb-4">${product.price.toFixed(2)}</p>
+
+          {/* Stock Availability Indicator */}
+          <div className="mb-8">
+            {product.stock > 0 ? (
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${product.stock > 10 ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
+                <p className={`text-[10px] font-black uppercase tracking-widest ${product.stock > 10 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {product.stock > 10 ? 'Artifact Available' : `Limited Stock: ${product.stock} Units Remaining`}
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-rose-600">Artifact Currently Departed (Out of Stock)</p>
+              </div>
+            )}
+          </div>
 
           <p className="text-gray-500 leading-relaxed mb-10 text-lg">
             {product.description}
@@ -151,16 +168,25 @@ const ProductDetail: React.FC = () => {
           <div className="space-y-8 pb-10 border-b border-gray-100">
             <div className="flex items-center space-x-6">
               <div className="flex items-center border-2 border-gray-100 rounded-2xl px-4 py-2">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-gray-400 hover:text-gray-900 p-2 font-bold">-</button>
-                <span className="w-12 text-center font-black text-gray-900">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="text-gray-400 hover:text-gray-900 p-2 font-bold">+</button>
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={product.stock === 0}
+                  className="text-gray-400 hover:text-gray-900 p-2 font-bold disabled:opacity-20"
+                >-</button>
+                <span className="w-12 text-center font-black text-gray-900">{product.stock === 0 ? 0 : quantity}</span>
+                <button
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  disabled={product.stock === 0 || quantity >= product.stock}
+                  className="text-gray-400 hover:text-gray-900 p-2 font-bold disabled:opacity-20"
+                >+</button>
               </div>
               <button
                 onClick={() => addToCart(product, quantity)}
-                className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black flex items-center justify-center space-x-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+                disabled={product.stock === 0}
+                className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black flex items-center justify-center space-x-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
               >
                 <ShoppingCart className="h-6 w-6" />
-                <span>Add to Cart</span>
+                <span>{product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
               </button>
             </div>
 

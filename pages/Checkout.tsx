@@ -11,9 +11,10 @@ import StripePaymentForm from '../components/cart/StripePaymentForm';
 import { Address } from '../types';
 import { userService } from '../services/userService';
 import Loader from '../components/common/Loader';
+import { GatewaySetting } from '../types';
 
-// Load Stripe outside of component to avoid recreating it
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// We'll initialize stripePromise dynamically inside the component
+let stripePromise: Promise<any> | null = null;
 
 const CheckoutForm: React.FC = () => {
   const { cart, subtotal, tax, shipping, total, clearCart } = useCart();
@@ -30,18 +31,42 @@ const CheckoutForm: React.FC = () => {
   const [phone, setPhone] = useState(user?.phone || '');
   const [email, setEmail] = useState(user?.email || '');
 
+  const [gateways, setGateways] = useState<GatewaySetting[]>([]);
+  const [selectedGateway, setSelectedGateway] = useState<string>('');
+  const [stripeReady, setStripeReady] = useState(false);
+
   useEffect(() => {
-    const fetchAddresses = async () => {
+    const fetchCheckoutData = async () => {
       try {
-        const data = await userService.getAddresses();
-        setAddresses(data);
-        const defaultAddr = data.find(a => a.isDefault);
+        const [addrData, gwData] = await Promise.all([
+          userService.getAddresses(),
+          paymentService.getSettings().catch(() => [])
+        ]);
+
+        setAddresses(addrData);
+        const defaultAddr = addrData.find(a => a.isDefault);
         if (defaultAddr) setSelectedAddressId(defaultAddr._id);
+
+        const activeGws = gwData.filter(g => g.isActive);
+        setGateways(activeGws);
+
+        if (activeGws.length > 0) {
+          setSelectedGateway(activeGws[0].gateway);
+
+          const stripeSetting = activeGws.find(g => g.gateway === 'stripe');
+          if (stripeSetting) {
+            const pk = stripeSetting.mode === 'live' ? stripeSetting.livePublishableKey : stripeSetting.testPublishableKey;
+            if (pk) {
+              stripePromise = loadStripe(pk);
+              setStripeReady(true);
+            }
+          }
+        }
       } catch (err) {
-        console.error('Failed to load identity coordinates');
+        console.error('Failed to load identity or protocol coordinates');
       }
     };
-    fetchAddresses();
+    fetchCheckoutData();
   }, []);
 
   const preparePayment = async (e: React.FormEvent) => {
@@ -68,7 +93,7 @@ const CheckoutForm: React.FC = () => {
           price: item.price
         })),
         shippingAddress: finalAddress,
-        paymentMethod: 'Stripe' as const,
+        paymentMethod: selectedGateway === 'stripe' ? 'Stripe' : 'COD' as any,
         itemsPrice: subtotal,
         taxPrice: tax,
         shippingPrice: shipping,
@@ -77,9 +102,15 @@ const CheckoutForm: React.FC = () => {
 
       const order = await orderService.createOrder(orderData);
 
-      // 2. Create Payment Intent
-      const { clientSecret: secret } = await paymentService.createPaymentIntent(total, order._id);
-      setClientSecret(secret);
+      // 2. Handle Payment logic
+      if (selectedGateway === 'stripe') {
+        const { clientSecret: secret } = await paymentService.createPaymentIntent(total, order._id);
+        setClientSecret(secret);
+      } else {
+        // Handle COD or others
+        navigate('/order-confirmation', { state: { orderId: order._id } });
+        clearCart();
+      }
 
       // Store order info in session to handle post-payment
       sessionStorage.setItem('pendingOrderId', order._id);
@@ -233,14 +264,18 @@ const CheckoutForm: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Financial Commitment</h3>
               </div>
 
-              <StripePaymentForm
-                total={total}
-                clientSecret={clientSecret}
-                onSuccess={handlePaymentSuccess}
-                onError={(msg) => setError(msg)}
-                isProcessing={isProcessing}
-                setIsProcessing={setIsProcessing}
-              />
+              {stripePromise && (
+                <Elements stripe={stripePromise}>
+                  <StripePaymentForm
+                    total={total}
+                    clientSecret={clientSecret}
+                    onSuccess={handlePaymentSuccess}
+                    onError={(msg) => setError(msg)}
+                    isProcessing={isProcessing}
+                    setIsProcessing={setIsProcessing}
+                  />
+                </Elements>
+              )}
 
               <button
                 onClick={() => {
@@ -250,7 +285,7 @@ const CheckoutForm: React.FC = () => {
                 className="w-full mt-8 text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] hover:text-gray-900 transition-colors"
                 disabled={isProcessing}
               >
-                ← Return to Phase 01/02
+                ← Return to Phase 01/02/03
               </button>
             </section>
           )}
@@ -318,9 +353,9 @@ const CheckoutForm: React.FC = () => {
 
 const Checkout: React.FC = () => {
   return (
-    <Elements stripe={stripePromise}>
+    <div className="min-h-screen bg-slate-50/30">
       <CheckoutForm />
-    </Elements>
+    </div>
   );
 };
 

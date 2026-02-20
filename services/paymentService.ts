@@ -1,5 +1,5 @@
 import api from './api';
-import { ApiResponse } from '../types';
+import { ApiResponse, GatewaySetting } from '../types';
 
 export const paymentService = {
     // Create payment intent
@@ -26,4 +26,16 @@ export const paymentService = {
         });
         return response.data.data;
     },
+
+    // Get gateway settings
+    getSettings: async (): Promise<GatewaySetting[]> => {
+        const response = await api.get<ApiResponse<GatewaySetting[]>>('/payment/settings');
+        return response.data.data;
+    },
+
+    // Update gateway setting
+    updateSetting: async (setting: Partial<GatewaySetting>): Promise<GatewaySetting> => {
+        const response = await api.post<ApiResponse<GatewaySetting>>('/payment/settings', setting);
+        return response.data.data;
+    }
 };

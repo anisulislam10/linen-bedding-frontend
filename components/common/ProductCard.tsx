@@ -44,6 +44,13 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           />
         )}
 
+        {/* Out of Stock Badge */}
+        {product.stock === 0 && (
+          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-100 z-10 shadow-sm">
+            <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest">Departed</span>
+          </div>
+        )}
+
         {/* Wishlist Marker */}
         <button
           onClick={async (e) => {
@@ -73,11 +80,15 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              addToCart(product);
+              if (product.stock > 0) addToCart(product);
             }}
-            className="w-full bg-primary text-white py-3.5 px-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-sage transition-all duration-300 shadow-lg rounded-lg"
+            disabled={product.stock === 0}
+            className={`w-full py-3.5 px-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg rounded-lg ${product.stock > 0
+              ? 'bg-primary text-white hover:bg-sage'
+              : 'bg-white/90 text-gray-400 cursor-not-allowed border border-gray-100'
+              }`}
           >
-            Quick Add
+            {product.stock > 0 ? 'Quick Add' : 'Out of Stock'}
           </button>
         </div>
       </Link>
