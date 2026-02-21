@@ -97,7 +97,7 @@ const CategoryManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Are you sure you want to remove this classification?')) {
+        if (window.confirm('Are you sure you want to delete this category?')) {
             try {
                 await productService.deleteCategory(id);
                 setCategories(prev => prev.filter(c => c._id !== id));
@@ -119,15 +119,15 @@ const CategoryManagement: React.FC = () => {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Classification Matrix</h1>
-                    <p className="text-slate-400 text-sm font-medium">Define the taxonomy of your artifact collection.</p>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase">Categories</h1>
+                    <p className="text-slate-400 text-sm font-medium">Organize your products into categories.</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
                 >
                     <Plus className="w-4 h-4" />
-                    <span>New Classification</span>
+                    <span>Add Category</span>
                 </button>
             </div>
 
@@ -138,10 +138,10 @@ const CategoryManagement: React.FC = () => {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Designation</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status / Depth</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Identifier</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category Name</th>
+                                    <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type</th>
+                                    <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Slug</th>
+                                    <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -160,12 +160,12 @@ const CategoryManagement: React.FC = () => {
                                         </td>
                                         <td className="px-8 py-4">
                                             {c.parentCategory ? (
-                                                <span className="text-[9px] font-black text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase tracking-widest">
+                                                <span className="text-[9px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase tracking-widest">
                                                     Sub / {typeof c.parentCategory === 'string' ? 'Parent' : c.parentCategory.name}
                                                 </span>
                                             ) : (
-                                                <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 uppercase tracking-widest">
-                                                    Root Index
+                                                <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 uppercase tracking-widest">
+                                                    Main Category
                                                 </span>
                                             )}
                                         </td>
@@ -197,18 +197,18 @@ const CategoryManagement: React.FC = () => {
 
                 {/* Info / Tips */}
                 <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white h-fit">
-                    <h3 className="text-sm font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Taxonomy Rules</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Category Guide</h3>
                     <ul className="space-y-6">
                         <li className="flex gap-4">
-                            <div className="w-6 h-6 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-[10px] font-black">1</div>
+                            <div className="w-6 h-6 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-[10px] font-bold">1</div>
                             <p className="text-xs text-slate-400 leading-relaxed font-medium">Root categories define the main navigational pillars of the marketplace.</p>
                         </li>
                         <li className="flex gap-4">
-                            <div className="w-6 h-6 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-[10px] font-black">2</div>
-                            <p className="text-xs text-slate-400 leading-relaxed font-medium">Nested classifications appear as sub-filters in the artifact collective.</p>
+                            <div className="w-6 h-6 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-[10px] font-bold">2</div>
+                            <p className="text-xs text-slate-400 leading-relaxed font-medium">Nested categories appear as sub-filters in the product list.</p>
                         </li>
                         <li className="flex gap-4">
-                            <div className="w-6 h-6 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-[10px] font-black">3</div>
+                            <div className="w-6 h-6 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-[10px] font-bold">3</div>
                             <p className="text-xs text-slate-400 leading-relaxed font-medium">Slugs must be unique and are used for SEO-optimized URL routing.</p>
                         </li>
                     </ul>
@@ -220,8 +220,8 @@ const CategoryManagement: React.FC = () => {
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden">
                         <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">
-                                {selectedCategory ? 'Modify Index' : 'New Classification'}
+                            <h2 className="text-2xl font-bold text-slate-900 tracking-tighter uppercase">
+                                {selectedCategory ? 'Edit Category' : 'Add Category'}
                             </h2>
                             <button onClick={() => setModalOpen(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-all">
                                 <X className="w-6 h-6 text-slate-400" />
@@ -229,7 +229,7 @@ const CategoryManagement: React.FC = () => {
                         </div>
                         <form onSubmit={handleSubmit} className="p-8 space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Designation</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category Name</label>
                                 <input
                                     required
                                     type="text"
@@ -240,7 +240,7 @@ const CategoryManagement: React.FC = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL Identifier (Slug)</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Slug</label>
                                 <input
                                     type="text"
                                     value={formData.slug}
@@ -250,7 +250,7 @@ const CategoryManagement: React.FC = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Parent Index</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Parent Category</label>
                                 <select
                                     value={formData.parentCategory}
                                     onChange={e => setFormData({ ...formData, parentCategory: e.target.value })}
@@ -263,7 +263,7 @@ const CategoryManagement: React.FC = () => {
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Definition</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Description</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -273,7 +273,7 @@ const CategoryManagement: React.FC = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Thumbnail Image</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Thumbnail Image</label>
                                 <div className="flex flex-col gap-2">
                                     {formData.image && (
                                         <div className="relative w-full h-32 bg-slate-50 rounded-2xl overflow-hidden">
@@ -284,15 +284,15 @@ const CategoryManagement: React.FC = () => {
                                         type="file"
                                         accept="image/*"
                                         onChange={handleFileChange}
-                                        className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
+                                        className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
                                     />
                                 </div>
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all mt-4"
+                                className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all mt-4"
                             >
-                                {selectedCategory ? 'Commit Changes' : 'Execute Inscription'}
+                                {selectedCategory ? 'Save Changes' : 'Create Category'}
                             </button>
                         </form>
                     </div>

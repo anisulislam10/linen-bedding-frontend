@@ -7,7 +7,6 @@ export const authService = {
         name: string;
         email: string;
         password: string;
-        phone: string;
     }): Promise<{ userId: string; email: string }> => {
         const response = await api.post<ApiResponse<{ userId: string; email: string }>>(
             '/auth/register',
@@ -40,9 +39,15 @@ export const authService = {
         await api.post('/auth/reset-password', { token, password });
     },
 
-    // Verify email
-    verifyEmail: async (token: string): Promise<void> => {
-        await api.post('/auth/verify-email', { token });
+    // Verify email (token from URL query param sent to backend as GET)
+    verifyEmail: async (token: string): Promise<{ email: string }> => {
+        const response = await api.get<ApiResponse<{ email: string }>>(`/auth/verify-email?token=${token}`);
+        return response.data.data;
+    },
+
+    // Resend verification email
+    resendVerification: async (email: string): Promise<void> => {
+        await api.post('/auth/resend-verification', { email });
     },
 
     // Get current user (using stored token)

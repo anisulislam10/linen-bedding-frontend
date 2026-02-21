@@ -55,6 +55,7 @@ const UserProfile: React.FC = () => {
   const [returnReason, setReturnReason] = useState('');
   const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
   const [myReturns, setMyReturns] = useState<ReturnRequest[]>([]);
+  const [selectedReturnItems, setSelectedReturnItems] = useState<{ [productId: string]: { selected: boolean, quantity: number } }>({});
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -80,7 +81,7 @@ const UserProfile: React.FC = () => {
       setWishlist(wishlistData);
       setMyReturns(returnsData);
     } catch (err: any) {
-      setError(err.message || 'Failed to sync with matrix');
+      setError(err.message || 'Failed to sync with server');
     } finally {
       setLoading(false);
     }
@@ -90,12 +91,25 @@ const UserProfile: React.FC = () => {
     e.preventDefault();
     if (!selectedOrderId || !returnReason) return;
 
+    const items = Object.entries(selectedReturnItems)
+      .filter(([_, data]: [string, any]) => data.selected)
+      .map(([productId, data]: [string, any]) => ({
+        product: productId,
+        quantity: data.quantity
+      }));
+
+    if (items.length === 0) {
+      toast.error('Please select at least one item to return');
+      return;
+    }
+
     try {
       setIsSubmittingReturn(true);
-      await returnService.createReturnRequest(selectedOrderId, returnReason);
+      await returnService.createReturnRequest(selectedOrderId, returnReason, items);
       toast.success('Return request submitted successfully');
       setIsReturnModalOpen(false);
       setReturnReason('');
+      setSelectedReturnItems({});
       fetchData(); // Refresh data to update button state
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to submit return request');
@@ -109,23 +123,26 @@ const UserProfile: React.FC = () => {
     try {
       if (editingAddress) {
         await userService.updateAddress(editingAddress._id, addressFormData);
+        toast.success('Address updated!');
       } else {
         await userService.addAddress(addressFormData);
+        toast.success('Address added!');
       }
       setIsAddressModalOpen(false);
       fetchData();
     } catch (err: any) {
-      alert('Protocol failed: ' + err.message);
+      toast.error(err.response?.data?.message || 'Failed to save address');
     }
   };
 
   const handleDeleteAddress = async (id: string) => {
-    if (window.confirm('Terminate this delivery vector?')) {
+    if (window.confirm('Delete this address?')) {
       try {
         await userService.deleteAddress(id);
+        toast.success('Address deleted');
         fetchData();
       } catch (err: any) {
-        alert('Deletion failed');
+        toast.error('Failed to delete address');
       }
     }
   };
@@ -133,7 +150,7 @@ const UserProfile: React.FC = () => {
   const handleSecuritySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (securityData.newPassword !== securityData.confirmPassword) {
-      alert('Password mismatch');
+      toast.error('Passwords do not match');
       return;
     }
     try {
@@ -142,8 +159,9 @@ const UserProfile: React.FC = () => {
       await userService.changePassword(securityData.currentPassword, securityData.newPassword);
       setSecuritySuccess(true);
       setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('Password changed successfully!');
     } catch (err: any) {
-      alert(err.message || 'Cipher update failed');
+      toast.error(err.response?.data?.message || 'Failed to change password');
     } finally {
       setSecurityLoading(false);
     }
@@ -158,11 +176,11 @@ const UserProfile: React.FC = () => {
       fd.append('phone', profileFormData.phone);
       if (profileImage) fd.append('avatar', profileImage);
 
-      const updated = await userService.updateProfile(fd);
-      // In a real app we might need to sync the AuthContext
-      alert('Identity protocols updated');
+      await userService.updateProfile(fd);
+      await refreshUser(); // Sync the auth context with updated data
+      toast.success('Profile updated successfully!');
     } catch (err: any) {
-      alert('Update failed');
+      toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setProfileLoading(false);
     }
@@ -190,16 +208,16 @@ const UserProfile: React.FC = () => {
     return (
       <div className="max-w-md mx-auto py-24 px-4">
         <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-xl">
-          <h2 className="text-3xl font-black text-gray-900 mb-8 text-center uppercase tracking-tighter">Terminal Access</h2>
-          <p className="text-gray-400 mb-8 text-center text-xs font-bold uppercase tracking-widest leading-relaxed">Sign in to authorize access to your transaction ledger and delivery coordinates.</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center uppercase tracking-tighter">Login</h2>
+          <p className="text-gray-400 mb-8 text-center text-xs font-bold uppercase tracking-widest leading-relaxed">Sign in to your account to manage your orders and addresses.</p>
           <form className="space-y-6" onSubmit={handleLogin}>
             {loginError && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-xl text-[10px] font-black uppercase text-center border border-red-100">
+              <div className="bg-red-50 text-red-600 p-3 rounded-xl text-[10px] font-bold uppercase text-center border border-red-100">
                 {loginError}
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Identity ID</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Identity ID</label>
               <input
                 type="email"
                 value={loginEmail}
@@ -211,7 +229,7 @@ const UserProfile: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Access Cipher</label>
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Access Cipher</label>
               <input
                 type="password"
                 value={loginPassword}
@@ -225,9 +243,9 @@ const UserProfile: React.FC = () => {
             <button
               type="submit"
               disabled={loginLoading}
-              className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl hover:bg-black transition-all disabled:opacity-50"
+              className="w-full bg-gray-900 text-white py-5 rounded-2xl font-bold uppercase tracking-[0.3em] text-[11px] shadow-2xl hover:bg-black transition-all disabled:opacity-50"
             >
-              {loginLoading ? 'Initiating...' : 'Authorize Login'}
+              {loginLoading ? 'Logging in...' : 'Sign In'}
             </button>
           </form>
         </div>
@@ -243,21 +261,33 @@ const UserProfile: React.FC = () => {
           <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm mb-8">
             <div className="flex flex-col items-center text-center mb-10">
               <div className="relative group">
-                <img src={user?.avatar} alt="Avatar" className="w-28 h-28 rounded-full border-4 border-indigo-50 mb-6 object-cover shadow-xl" />
-                <button className="absolute bottom-6 right-0 bg-white p-2 rounded-full shadow-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-all text-indigo-600 hover:scale-110">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Avatar" className="w-28 h-28 rounded-full border-4 border-indigo-50 mb-6 object-cover shadow-xl" />
+                ) : (
+                  <div className="w-28 h-28 rounded-full border-4 border-indigo-50 mb-6 shadow-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <span className="text-white text-3xl font-bold">
+                      {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className="absolute bottom-6 right-0 bg-white p-2 rounded-full shadow-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-all text-indigo-600 hover:scale-110"
+                  title="Edit profile"
+                >
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
-              <h3 className="font-black text-2xl text-gray-900 tracking-tighter uppercase">{user?.name}</h3>
-              <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">{user?.role} // lvl.1</p>
+              <h3 className="font-bold text-2xl text-gray-900 tracking-tighter uppercase">{user?.name || 'Welcome!'}</h3>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">{user?.email}</p>
             </div>
             <nav className="space-y-2">
               {[
-                { id: 'orders', icon: Package, label: 'Order Ledger' },
+                { id: 'orders', icon: Package, label: 'Order History' },
                 { id: 'wishlist', icon: Heart, label: 'Wishlist' },
-                { id: 'addresses', icon: MapPin, label: 'Coordinates' },
-                { id: 'security', icon: Shield, label: 'Encryption' },
-                { id: 'settings', icon: Settings, label: 'Preferences' }
+                { id: 'addresses', icon: MapPin, label: 'Addresses' },
+                { id: 'security', icon: Shield, label: 'Security' },
+                { id: 'settings', icon: Settings, label: 'Profile Settings' }
               ].map(item => (
                 <button
                   key={item.id}
@@ -266,17 +296,17 @@ const UserProfile: React.FC = () => {
                 >
                   <div className="flex items-center space-x-4">
                     <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-white' : 'text-gray-400'}`} />
-                    <span className="font-black text-[11px] uppercase tracking-widest">{item.label}</span>
+                    <span className="font-bold text-[11px] uppercase tracking-widest">{item.label}</span>
                   </div>
                   <ChevronRight className={`h-4 w-4 ${activeTab === item.id ? 'opacity-100' : 'opacity-0'}`} />
                 </button>
               ))}
               <button
                 onClick={logout}
-                className="w-full flex items-center space-x-4 p-5 rounded-2xl text-rose-500 hover:bg-rose-50 font-black text-[11px] uppercase tracking-widest mt-6"
+                className="w-full flex items-center space-x-4 p-5 rounded-2xl text-rose-500 hover:bg-rose-50 font-bold text-[11px] uppercase tracking-widest mt-6"
               >
                 <LogOut className="h-5 w-5" />
-                <span>Terminate Session</span>
+                <span>Logout</span>
               </button>
             </nav>
           </div>
@@ -284,6 +314,25 @@ const UserProfile: React.FC = () => {
 
         {/* Content */}
         <main className="flex-1">
+          {/* Profile completion banner */}
+          {(!user?.name || !user?.phone) && (
+            <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">👋</span>
+                <div>
+                  <p className="font-semibold text-purple-900 text-sm">Complete your profile</p>
+                  <p className="text-purple-600 text-xs">Add your name, phone and photo to get the best experience.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className="flex-shrink-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:shadow transition-all"
+              >
+                Complete Profile
+              </button>
+            </div>
+          )}
+
           <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm min-h-[650px] relative overflow-hidden">
             {loading ? (
               <div className="h-full w-full flex items-center justify-center py-20">
@@ -293,12 +342,12 @@ const UserProfile: React.FC = () => {
               <>
                 {activeTab === 'orders' && (
                   <div>
-                    <h2 className="text-4xl font-black text-gray-900 mb-12 tracking-tighter uppercase">Transaction Record</h2>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-12 tracking-tighter uppercase">Order History</h2>
                     <div className="space-y-8">
                       {orders.length === 0 ? (
                         <div className="text-center py-20 bg-gray-50 rounded-[2.5rem]">
                           <Package className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                          <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Matrix empty. No transactions recorded.</p>
+                          <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Your order history is empty.</p>
                         </div>
                       ) : (
                         orders.map(order => (
@@ -309,19 +358,19 @@ const UserProfile: React.FC = () => {
                                   <Package className="h-8 w-8" />
                                 </div>
                                 <div className="min-w-0">
-                                  <h5 className="font-black text-[11px] text-gray-400 uppercase tracking-widest mb-1">Transaction Link</h5>
+                                  <h5 className="font-bold text-[11px] text-gray-400 uppercase tracking-widest mb-1">Order ID</h5>
                                   <p className="font-mono text-sm text-gray-900 break-all uppercase selection:bg-indigo-100">{order._id}</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-8">
                                 <div className="text-right">
-                                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">Total Allocation</p>
-                                  <p className="text-xl font-black text-gray-900">${order.totalPrice.toFixed(2)}</p>
+                                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Order Total</p>
+                                  <p className="text-xl font-bold text-gray-900">${order.totalPrice.toFixed(2)}</p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">Status Protocol</p>
+                                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Current Status</p>
                                   <div className="flex flex-col items-end gap-2">
-                                    <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg inline-block ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' :
+                                    <span className={`text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg inline-block ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' :
                                       order.status === 'Cancelled' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>
                                       {order.status}
                                     </span>
@@ -335,7 +384,7 @@ const UserProfile: React.FC = () => {
 
                                         if (hasRequestedReturn) {
                                           return (
-                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg">
                                               Return: {returnReq?.status}
                                             </span>
                                           );
@@ -346,9 +395,18 @@ const UserProfile: React.FC = () => {
                                             <button
                                               onClick={() => {
                                                 setSelectedOrderId(order._id);
+                                                // Initialize selection with all items
+                                                const initialSelection: any = {};
+                                                order.items.forEach((item: any) => {
+                                                  initialSelection[item.product?._id || item.product] = {
+                                                    selected: false,
+                                                    quantity: item.quantity
+                                                  };
+                                                });
+                                                setSelectedReturnItems(initialSelection);
                                                 setIsReturnModalOpen(true);
                                               }}
-                                              className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-indigo-600 transition-all shadow-lg"
+                                              className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-indigo-600 transition-all shadow-lg"
                                             >
                                               <RefreshCw className="w-3 h-3" />
                                               Request Return
@@ -364,7 +422,7 @@ const UserProfile: React.FC = () => {
                             </div>
 
                             <div className="space-y-4">
-                              <h6 className="text-[9px] font-black uppercase tracking-[0.4em] text-gray-300 ml-1">Ordered Artifacts</h6>
+                              <h6 className="text-[9px] font-bold uppercase tracking-[0.4em] text-gray-300 ml-1">Order Items</h6>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {order.items.map((item: any, idx: number) => (
                                   <Link
@@ -380,7 +438,7 @@ const UserProfile: React.FC = () => {
                                       />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                      <p className="text-[10px] font-black text-gray-900 uppercase truncate group-hover/item:text-indigo-600">{item.product?.name || 'Unknown Artifact'}</p>
+                                      <p className="text-[10px] font-bold text-gray-900 uppercase truncate group-hover/item:text-indigo-600">{item.product?.name || 'Unknown Product'}</p>
                                       <p className="text-[9px] text-gray-400 font-bold uppercase">Qty: {item.quantity} • ${item.price.toFixed(2)}</p>
                                     </div>
                                     <ArrowRight className="h-4 w-4 text-gray-300 opacity-0 group-hover/item:opacity-100 group-hover/item:text-indigo-600 transition-all" />
@@ -388,10 +446,10 @@ const UserProfile: React.FC = () => {
                                 ))}
                               </div>
                             </div>
-                            <div className="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-gray-400">
-                              <span>Registration: {new Date(order.createdAt).toLocaleDateString()}</span>
+                            <div className="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                              <span>Order Date: {new Date(order.createdAt).toLocaleDateString()}</span>
                               <span className="flex items-center gap-2">
-                                Tracking: <span className="text-gray-900 font-mono">{order.trackingNumber || 'PENDING'}</span>
+                                Tracking: <span className="text-gray-900">{order.trackingNumber || 'PENDING'}</span>
                               </span>
                             </div>
                           </div>
@@ -404,26 +462,26 @@ const UserProfile: React.FC = () => {
                 {activeTab === 'addresses' && (
                   <div>
                     <div className="flex items-center justify-between mb-12">
-                      <h2 className="text-4xl font-black text-gray-900 tracking-tighter uppercase">Delivery Vectors</h2>
+                      <h2 className="text-4xl font-bold text-gray-900 tracking-tighter uppercase">Saved Addresses</h2>
                       <button
                         onClick={() => { setEditingAddress(null); setAddressFormData({ fullName: '', phoneNumber: '', streetAddress: '', city: '', state: '', postalCode: '', country: 'USA', isDefault: false }); setIsAddressModalOpen(true); }}
-                        className="bg-indigo-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-100"
+                        className="bg-indigo-600 text-white px-6 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-100"
                       >
                         <Plus className="w-4 h-4" />
-                        <span>New Vector</span>
+                        <span>Add Address</span>
                       </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {addresses.map(address => (
                         <div key={address._id} className={`p-10 border-2 rounded-[2.5rem] relative transition-all hover:shadow-lg ${address.isDefault ? 'border-indigo-600 bg-indigo-50/10' : 'border-gray-50 bg-white'}`}>
                           {address.isDefault && (
-                            <div className="absolute top-8 right-8 px-3 py-1.5 bg-indigo-600 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-lg shadow-lg">Primary</div>
+                            <div className="absolute top-8 right-8 px-3 py-1.5 bg-indigo-600 text-white text-[9px] font-bold uppercase tracking-[0.2em] rounded-lg shadow-lg">Primary</div>
                           )}
                           <div className="flex items-center space-x-3 mb-6">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${address.isDefault ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-400'}`}>
                               <MapPin className="w-5 h-5" />
                             </div>
-                            <h5 className="font-black text-gray-900 text-sm uppercase tracking-tight">Location Matrix</h5>
+                            <h5 className="font-bold text-gray-900 text-sm uppercase tracking-tight">Saved Address</h5>
                           </div>
                           <p className="text-sm text-gray-500 leading-relaxed font-medium">
                             <span className="text-gray-900 font-bold">{address.fullName}</span><br />
@@ -434,14 +492,14 @@ const UserProfile: React.FC = () => {
                           <div className="mt-8 flex items-center space-x-4">
                             <button
                               onClick={() => { setEditingAddress(address); setAddressFormData(address as any); setIsAddressModalOpen(true); }}
-                              className="flex items-center space-x-2 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-xl"
+                              className="flex items-center space-x-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-xl"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                               <span>Adjust</span>
                             </button>
                             <button
                               onClick={() => handleDeleteAddress(address._id)}
-                              className="flex items-center space-x-2 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-700 transition-colors bg-rose-50 px-4 py-2 rounded-xl"
+                              className="flex items-center space-x-2 text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:text-rose-700 transition-colors bg-rose-50 px-4 py-2 rounded-xl"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span>Purge</span>
@@ -457,13 +515,13 @@ const UserProfile: React.FC = () => {
 
                 {activeTab === 'wishlist' && (
                   <div>
-                    <h2 className="text-4xl font-black text-gray-900 mb-12 tracking-tighter uppercase">Wishlist Index</h2>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-12 tracking-tighter uppercase">Wishlist</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       {wishlist.length === 0 ? (
                         <div className="col-span-full text-center py-20 bg-gray-50 rounded-[2.5rem]">
                           <Heart className="h-12 w-12 text-gray-200 mx-auto mb-4" />
                           <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Your wishlist is currently void.</p>
-                          <Link to="/products" className="mt-6 inline-block bg-indigo-600 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">Explore Artifacts</Link>
+                          <Link to="/products" className="mt-6 inline-block bg-indigo-600 text-white px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all">Explore Products</Link>
                         </div>
                       ) : (
                         wishlist.map(product => (
@@ -477,9 +535,9 @@ const UserProfile: React.FC = () => {
                             </Link>
                             <div className="flex-1 min-w-0">
                               <Link to={`/products/${product._id}`}>
-                                <h4 className="font-black text-sm text-gray-900 uppercase truncate group-hover:text-indigo-600 transition-colors mb-1">{product.name}</h4>
+                                <h4 className="font-bold text-sm text-gray-900 uppercase truncate group-hover:text-indigo-600 transition-colors mb-1">{product.name}</h4>
                               </Link>
-                              <p className="font-black text-indigo-600 text-sm mb-4">${product.price.toFixed(2)}</p>
+                              <p className="font-bold text-indigo-600 text-sm mb-4">${product.price.toFixed(2)}</p>
                               <button
                                 onClick={async () => {
                                   try {
@@ -491,10 +549,10 @@ const UserProfile: React.FC = () => {
                                     toast.error('Failed to update wishlist');
                                   }
                                 }}
-                                className="text-[9px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-700 flex items-center space-x-2"
+                                className="text-[9px] font-bold uppercase tracking-widest text-rose-500 hover:text-rose-700 flex items-center space-x-2"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                                <span>Terminate Entry</span>
+                                <span>Remove Item</span>
                               </button>
                             </div>
                           </div>
@@ -506,17 +564,17 @@ const UserProfile: React.FC = () => {
 
                 {activeTab === 'security' && (
                   <div className="max-w-2xl">
-                    <h2 className="text-4xl font-black text-gray-900 mb-12 tracking-tighter uppercase">Cipher Protocols</h2>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-12 tracking-tighter uppercase">Security Settings</h2>
                     <form onSubmit={handleSecuritySubmit} className="space-y-8">
                       {securitySuccess && (
-                        <div className="bg-emerald-50 text-emerald-600 p-6 rounded-[2rem] text-xs font-black uppercase tracking-widest flex items-center space-x-4 border border-emerald-100 animate-in fade-in zoom-in duration-300">
+                        <div className="bg-emerald-50 text-emerald-600 p-6 rounded-[2rem] text-xs font-bold uppercase tracking-widest flex items-center space-x-4 border border-emerald-100 animate-in fade-in zoom-in duration-300">
                           <CheckCircle2 className="w-6 h-6" />
-                          <span>Access cipher successfully rotated</span>
+                          <span>Password successfully updated</span>
                         </div>
                       )}
                       <div className="space-y-6">
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Current Cipher</label>
+                          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Current Password</label>
                           <div className="relative group">
                             <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                             <input
@@ -524,32 +582,32 @@ const UserProfile: React.FC = () => {
                               type="password"
                               value={securityData.currentPassword}
                               onChange={e => setSecurityData({ ...securityData, currentPassword: e.target.value })}
-                              placeholder="Enter existing pattern"
+                              placeholder="Enter existing password"
                               className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-5 pl-14 rounded-2xl outline-none transition-all text-sm"
                             />
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">New Pattern</label>
+                            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">New Password</label>
                             <input
                               required
                               type="password"
                               value={securityData.newPassword}
                               onChange={e => setSecurityData({ ...securityData, newPassword: e.target.value })}
-                              placeholder="New cipher"
-                              className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-5 rounded-2xl outline-none transition-all text-sm"
+                              placeholder="New password"
+                              className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-5 rounded-2xl outline-none transition-all text-sm font-bold"
                             />
                           </div>
                           <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Confirm Pattern</label>
+                            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Confirm Password</label>
                             <input
                               required
                               type="password"
                               value={securityData.confirmPassword}
                               onChange={e => setSecurityData({ ...securityData, confirmPassword: e.target.value })}
-                              placeholder="Repeat pattern"
-                              className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-5 rounded-2xl outline-none transition-all text-sm"
+                              placeholder="Repeat password"
+                              className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-5 rounded-2xl outline-none transition-all text-sm font-bold"
                             />
                           </div>
                         </div>
@@ -557,9 +615,9 @@ const UserProfile: React.FC = () => {
                       <button
                         type="submit"
                         disabled={securityLoading}
-                        className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-100 disabled:opacity-50"
+                        className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-bold text-[11px] uppercase tracking-[0.3em] flex items-center justify-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-100 disabled:opacity-50"
                       >
-                        {securityLoading ? 'Syncing...' : 'Commit Cipher Update'}
+                        {securityLoading ? 'Updating...' : 'Update Password'}
                       </button>
                     </form>
                   </div>
@@ -567,11 +625,11 @@ const UserProfile: React.FC = () => {
 
                 {activeTab === 'settings' && (
                   <div className="max-w-2xl">
-                    <h2 className="text-4xl font-black text-gray-900 mb-12 tracking-tighter uppercase">Identity Index</h2>
+                    <h2 className="text-4xl font-bold text-gray-900 mb-12 tracking-tighter uppercase">Profile Settings</h2>
                     <form onSubmit={handleProfileSubmit} className="space-y-8">
                       <div className="space-y-6">
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Designation (Full Name)</label>
+                          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Full Name</label>
                           <input
                             type="text"
                             value={profileFormData.name}
@@ -581,17 +639,17 @@ const UserProfile: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Signal Channel (Phone)</label>
+                          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Phone Number</label>
                           <input
                             type="text"
                             value={profileFormData.phone}
                             onChange={e => setProfileFormData({ ...profileFormData, phone: e.target.value })}
-                            placeholder="+1234567890"
+                            placeholder="e.g., +1234567890"
                             className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-5 rounded-2xl outline-none transition-all text-sm font-bold shadow-inner"
                           />
                         </div>
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Avatar Uplink</label>
+                          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Profile Picture</label>
                           <input
                             type="file"
                             onChange={e => setProfileImage(e.target.files ? e.target.files[0] : null)}
@@ -602,9 +660,9 @@ const UserProfile: React.FC = () => {
                       <button
                         type="submit"
                         disabled={profileLoading}
-                        className="w-full bg-gray-900 text-white py-6 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center space-x-3 hover:bg-black transition-all shadow-2xl disabled:opacity-50"
+                        className="w-full bg-gray-900 text-white py-6 rounded-3xl font-bold text-[11px] uppercase tracking-[0.3em] flex items-center justify-center space-x-3 hover:bg-black transition-all shadow-2xl disabled:opacity-50"
                       >
-                        {profileLoading ? 'Updating Index...' : 'Execute Protocol Update'}
+                        {profileLoading ? 'Updating Profile...' : 'Save All Changes'}
                       </button>
                     </form>
                   </div>
@@ -613,58 +671,213 @@ const UserProfile: React.FC = () => {
             )}
           </div>
         </main>
-      </div>
+      </div >
 
       {/* Address Modal */}
-      {isAddressModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
-          {/* ... existing address modal code ... */}
-        </div>
-      )}
+      {
+        isAddressModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+              <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 tracking-tighter uppercase">
+                  {editingAddress ? 'Edit Address' : 'New Address'}
+                </h2>
+                <button onClick={() => setIsAddressModalOpen(false)} className="p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
+              <form onSubmit={handleAddressSubmit} className="p-8 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Full Name</label>
+                    <input
+                      required
+                      type="text"
+                      value={addressFormData.fullName}
+                      onChange={e => setAddressFormData({ ...addressFormData, fullName: e.target.value })}
+                      placeholder="Full name"
+                      className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Phone Number</label>
+                    <input
+                      required
+                      type="text"
+                      value={addressFormData.phoneNumber}
+                      onChange={e => setAddressFormData({ ...addressFormData, phoneNumber: e.target.value })}
+                      placeholder="+1234567890"
+                      className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Street Address</label>
+                  <input
+                    required
+                    type="text"
+                    value={addressFormData.streetAddress}
+                    onChange={e => setAddressFormData({ ...addressFormData, streetAddress: e.target.value })}
+                    placeholder="123 Main St, Apt 4B"
+                    className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">City</label>
+                    <input
+                      required
+                      type="text"
+                      value={addressFormData.city}
+                      onChange={e => setAddressFormData({ ...addressFormData, city: e.target.value })}
+                      placeholder="New York"
+                      className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">State</label>
+                    <input
+                      required
+                      type="text"
+                      value={addressFormData.state}
+                      onChange={e => setAddressFormData({ ...addressFormData, state: e.target.value })}
+                      placeholder="NY"
+                      className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Postal Code</label>
+                    <input
+                      required
+                      type="text"
+                      value={addressFormData.postalCode}
+                      onChange={e => setAddressFormData({ ...addressFormData, postalCode: e.target.value })}
+                      placeholder="10001"
+                      className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Country</label>
+                    <input
+                      required
+                      type="text"
+                      value={addressFormData.country}
+                      onChange={e => setAddressFormData({ ...addressFormData, country: e.target.value })}
+                      placeholder="USA"
+                      className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 p-4 rounded-2xl outline-none transition-all text-sm font-medium"
+                    />
+                  </div>
+                </div>
+                <label className="flex items-center gap-3 cursor-pointer mt-2">
+                  <input
+                    type="checkbox"
+                    checked={addressFormData.isDefault}
+                    onChange={e => setAddressFormData({ ...addressFormData, isDefault: e.target.checked })}
+                    className="w-4 h-4 accent-indigo-600 rounded"
+                  />
+                  <span className="text-sm font-bold text-gray-600">Set as default address</span>
+                </label>
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.3em] hover:bg-slate-900 transition-all shadow-xl shadow-indigo-100 mt-4"
+                >
+                  {editingAddress ? 'Save Changes' : 'Add Address'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )
+      }
 
       {/* Return Request Modal */}
-      {isReturnModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-            <div className="p-10 border-b border-gray-50 flex items-center justify-between">
-              <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Request Return</h2>
-              <button onClick={() => setIsReturnModalOpen(false)} className="p-3 hover:bg-gray-50 rounded-2xl transition-all">
-                <X className="w-6 h-6 text-gray-400" />
-              </button>
+      {
+        isReturnModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+              <div className="p-10 border-b border-gray-50 flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-gray-900 tracking-tighter uppercase">Request Return</h2>
+                <button onClick={() => setIsReturnModalOpen(false)} className="p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
+              <form onSubmit={handleReturnSubmit} className="p-10 space-y-8">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Items to Return</label>
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                    {orders.find(o => o._id === selectedOrderId)?.items.map((item: any, idx: number) => {
+                      const productId = item.product?._id || item.product;
+                      const selection = selectedReturnItems[productId] || { selected: false, quantity: item.quantity };
+
+                      return (
+                        <div key={idx} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${selection.selected ? 'border-indigo-600 bg-indigo-50/30' : 'border-gray-50 bg-gray-50/20'}`}>
+                          <input
+                            type="checkbox"
+                            checked={selection.selected}
+                            onChange={() => setSelectedReturnItems(prev => ({
+                              ...prev,
+                              [productId]: { ...prev[productId], selected: !prev[productId].selected }
+                            }))}
+                            className="w-5 h-5 rounded-lg border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-gray-100 flex-shrink-0">
+                            <img
+                              src={item.product?.images?.[0]?.url || item.product?.image || '/placeholder.png'}
+                              alt={item.product?.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-bold text-gray-900 uppercase truncate">{item.product?.name || 'Product'}</p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase mt-0.5">${item.price.toFixed(2)}</p>
+                          </div>
+                          {selection.selected && (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                min="1"
+                                max={item.quantity}
+                                value={selection.quantity}
+                                onChange={(e) => setSelectedReturnItems(prev => ({
+                                  ...prev,
+                                  [productId]: { ...prev[productId], quantity: parseInt(e.target.value) }
+                                }))}
+                                className="w-16 p-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-center"
+                              />
+                              <span className="text-[9px] font-bold text-slate-400 uppercase">/ {item.quantity}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Reason for Return</label>
+                  <textarea
+                    required
+                    value={returnReason}
+                    onChange={e => setReturnReason(e.target.value)}
+                    placeholder="Tell us why you want to return these items..."
+                    rows={3}
+                    className="w-full p-5 bg-gray-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner resize-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReturn}
+                  className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-bold text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all disabled:opacity-50"
+                >
+                  {isSubmittingReturn ? 'Submitting Request...' : 'Submit Request'}
+                </button>
+              </form>
             </div>
-            <form onSubmit={handleReturnSubmit} className="p-10 space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Order Identifier</label>
-                <input
-                  type="text"
-                  value={selectedOrderId || ''}
-                  disabled
-                  className="w-full p-5 bg-gray-50 border-none rounded-2xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 transition-all opacity-60"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Reason for Return</label>
-                <textarea
-                  required
-                  value={returnReason}
-                  onChange={e => setReturnReason(e.target.value)}
-                  placeholder="Tell us why you want to return this product..."
-                  rows={4}
-                  className="w-full p-5 bg-gray-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner resize-none"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmittingReturn}
-                className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all mt-6 disabled:opacity-50"
-              >
-                {isSubmittingReturn ? 'Transmitting Request...' : 'Submit Request'}
-              </button>
-            </form>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

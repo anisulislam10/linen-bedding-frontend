@@ -112,7 +112,7 @@ const AdManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to terminate this advertisement protocol?')) return;
+        if (!window.confirm('Are you sure you want to delete this advertisement?')) return;
         try {
             await adService.deleteAd(id);
             fetchAds();
@@ -270,7 +270,7 @@ const AdManagement: React.FC = () => {
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-6 flex flex-col justify-end text-white">
                                                         <h4 className="text-xl font-black uppercase tracking-tighter mb-2">{formData.title || 'Untitled Campaign'}</h4>
                                                         <p className="text-[10px] text-white/70 font-medium mb-6 line-clamp-2">{formData.description || 'Campaign description stream...'}</p>
-                                                        <div className="bg-white text-black py-3 rounded-xl text-[8px] font-black text-center uppercase tracking-widest">Explore Artifact</div>
+                                                        <div className="bg-white text-black py-3 rounded-xl text-[8px] font-bold text-center uppercase tracking-widest">Explore Product</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -311,7 +311,7 @@ const AdManagement: React.FC = () => {
                                         className="w-full p-6 bg-slate-50 border-none rounded-[1.5rem] text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                                         value={formData.title}
                                         onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="Flash Sale Protocol"
+                                        placeholder="Flash Sale"
                                     />
                                 </div>
                                 <div className="space-y-4">
@@ -336,7 +336,7 @@ const AdManagement: React.FC = () => {
                                     rows={3}
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Execute immediate connection with our latest artifact collection..."
+                                    placeholder="Connect shoppers with our latest collection..."
                                 />
                             </div>
 

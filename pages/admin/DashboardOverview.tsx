@@ -75,7 +75,7 @@ const DashboardOverview: React.FC = () => {
     if (error || !stats || !analytics) {
         return (
             <div className="p-8 bg-red-50 text-red-600 rounded-2xl border border-red-100">
-                <h3 className="font-black uppercase tracking-widest text-sm mb-2">Error Accessing Data</h3>
+                <h3 className="font-bold uppercase tracking-widest text-sm mb-2">Error Accessing Data</h3>
                 <p>{error || 'Unable to load dashboard'}</p>
             </div>
         );
@@ -145,7 +145,7 @@ const DashboardOverview: React.FC = () => {
             {/* Period Selector */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase mb-2">Analytics Dashboard</h1>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase mb-2">Analytics Dashboard</h1>
                     <p className="text-slate-500 font-medium">Comprehensive business metrics and insights</p>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -172,14 +172,14 @@ const DashboardOverview: React.FC = () => {
                             </div>
                             <div className={`flex items-center space-x-1 ${parseFloat(card.growth) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                 {parseFloat(card.growth) >= 0 ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-                                <span className="text-sm font-black">{Math.abs(parseFloat(card.growth))}%</span>
+                                <span className="text-sm font-bold">{Math.abs(parseFloat(card.growth))}%</span>
                             </div>
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                                 {card.label}
                             </p>
-                            <h4 className="text-3xl font-black text-slate-900 tracking-tighter">
+                            <h4 className="text-3xl font-bold text-slate-900 tracking-tighter">
                                 {card.value}
                             </h4>
                         </div>
@@ -191,7 +191,7 @@ const DashboardOverview: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Revenue Over Time */}
                 <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                    <h3 className="font-black text-slate-900 uppercase tracking-tight mb-6">Revenue Trend</h3>
+                    <h3 className="font-bold text-slate-900 uppercase tracking-tight mb-6">Revenue Trend</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={formattedDailyData}>
                             <defs>
@@ -213,7 +213,7 @@ const DashboardOverview: React.FC = () => {
 
                 {/* Orders Over Time */}
                 <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                    <h3 className="font-black text-slate-900 uppercase tracking-tight mb-6">Order Volume</h3>
+                    <h3 className="font-bold text-slate-900 uppercase tracking-tight mb-6">Order Volume</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={formattedDailyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -229,7 +229,7 @@ const DashboardOverview: React.FC = () => {
 
                 {/* Sales by Category */}
                 <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                    <h3 className="font-black text-slate-900 uppercase tracking-tight mb-6">Sales by Category</h3>
+                    <h3 className="font-bold text-slate-900 uppercase tracking-tight mb-6">Sales by Category</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie
@@ -255,7 +255,7 @@ const DashboardOverview: React.FC = () => {
 
                 {/* Top Products */}
                 <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                    <h3 className="font-black text-slate-900 uppercase tracking-tight mb-6">Top Products</h3>
+                    <h3 className="font-bold text-slate-900 uppercase tracking-tight mb-6">Top Products</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={topProductsChart} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -273,18 +273,18 @@ const DashboardOverview: React.FC = () => {
             {/* Recent Orders Table */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
-                    <h3 className="font-black text-slate-900 uppercase tracking-tight">Recent Orders</h3>
-                    <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">Live</span>
+                    <h3 className="font-bold text-slate-900 uppercase tracking-tight">Recent Orders</h3>
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">Live</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order ID</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                                <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order ID</th>
+                                <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer</th>
+                                <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount</th>
+                                <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -296,14 +296,14 @@ const DashboardOverview: React.FC = () => {
                                     <td className="px-8 py-4 font-bold text-slate-700 text-sm">
                                         {order.user?.name || 'Guest'}
                                     </td>
-                                    <td className="px-8 py-4 font-black text-slate-900 text-sm">
+                                    <td className="px-8 py-4 font-bold text-slate-900 text-sm">
                                         ${order.totalPrice.toFixed(2)}
                                     </td>
                                     <td className="px-8 py-4">
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' :
-                                                order.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
-                                                    order.status === 'Cancelled' ? 'bg-rose-50 text-rose-600' :
-                                                        'bg-amber-50 text-amber-600'
+                                        <span className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' :
+                                            order.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
+                                                order.status === 'Cancelled' ? 'bg-rose-50 text-rose-600' :
+                                                    'bg-amber-50 text-amber-600'
                                             }`}>
                                             {order.status}
                                         </span>

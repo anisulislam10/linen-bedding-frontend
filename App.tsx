@@ -28,11 +28,15 @@ import AdManagement from './pages/admin/AdManagement';
 import WishlistManagement from './pages/admin/WishlistManagement';
 import TestimonialManagement from './pages/admin/TestimonialManagement';
 import ReturnManagement from './pages/admin/ReturnManagement';
+import SettingsOverview from './pages/admin/SettingsOverview';
 import AdminLogin from './pages/admin/AdminLogin';
 import TrackOrder from './pages/TrackOrder';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdDisplayManager from './components/common/AdDisplayManager';
 import CookieConsent from './components/common/CookieConsent';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Static Pages
 import FAQ from './pages/FAQ';
@@ -86,6 +90,11 @@ const AppContent = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
 
+          {/* Auth pages */}
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
           <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* Admin Routes */}
@@ -96,10 +105,10 @@ const AppContent = () => {
               <Route path="/admin/inventory" element={<ProductManagement />} />
               <Route path="/admin/orders" element={<OrderManagement />} />
               <Route path="/admin/returns" element={<ReturnManagement />} />
+              <Route path="/admin/settings" element={<SettingsOverview />} />
               <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/admin/categories" element={<CategoryManagement />} />
               <Route path="/admin/reviews" element={<ReviewManagement />} />
-              <Route path="/admin/content" element={<ContentManagement />} />
               <Route path="/admin/ads" element={<AdManagement />} />
               <Route path="/admin/wishlist" element={<WishlistManagement />} />
               <Route path="/admin/testimonials" element={<TestimonialManagement />} />

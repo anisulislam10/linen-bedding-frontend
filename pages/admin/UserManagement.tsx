@@ -45,8 +45,8 @@ const UserManagement: React.FC = () => {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">User Index</h1>
-                    <p className="text-slate-400 text-sm font-medium">Control access and monitor portal activity.</p>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase">User Management</h1>
+                    <p className="text-slate-400 text-sm font-medium">Manage user accounts and permissions.</p>
                 </div>
             </div>
 
@@ -66,11 +66,11 @@ const UserManagement: React.FC = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Member</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Access Level</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registration</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">User</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Role</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined Date</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -97,7 +97,7 @@ const UserManagement: React.FC = () => {
                                     <td className="px-8 py-4">
                                         <div className="flex items-center space-x-2">
                                             <Shield className={`w-4 h-4 ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-400'}`} />
-                                            <span className={`text-[10px] font-black uppercase tracking-widest ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                            <span className={`text-[10px] font-bold uppercase tracking-widest ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-500'}`}>
                                                 {u.role}
                                             </span>
                                         </div>
@@ -121,8 +121,8 @@ const UserManagement: React.FC = () => {
                                     </td>
                                     <td className="px-8 py-4">
                                         <div className="flex items-center justify-end">
-                                            <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline px-4 py-2">
-                                                Modify Perms
+                                            <button className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:underline px-4 py-2">
+                                                Edit Permissions
                                             </button>
                                         </div>
                                     </td>

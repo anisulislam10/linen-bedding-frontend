@@ -32,10 +32,10 @@ export interface CartItem {
 export interface User {
   _id: string;
   id?: string; // For backward compatibility
-  name: string;
+  name?: string | null;
   email: string;
-  avatar: string;
-  phone?: string;
+  avatar?: string | null;
+  phone?: string | null;
   role?: 'user' | 'admin';
   isVerified?: boolean;
   wishlist?: string[] | Product[];

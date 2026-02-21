@@ -53,7 +53,7 @@ const ProductManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Are you sure you want to decommission this artifact?')) {
+        if (window.confirm('Are you sure you want to delete this product?')) {
             try {
                 await productService.deleteProduct(id);
                 setProducts(prev => prev.filter(p => p._id !== id));
@@ -74,21 +74,21 @@ const ProductManagement: React.FC = () => {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">
-                        {isInventoryView ? 'Inventory Ledger' : 'Product Collective'}
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase">
+                        {isInventoryView ? 'Inventory' : 'Products'}
                     </h1>
                     <p className="text-slate-400 text-sm font-medium">
                         {isInventoryView
-                            ? 'Monitor and calibrate artifact quantities.'
-                            : 'Manage and refine your product collective.'}
+                            ? 'Monitor and manage stock levels.'
+                            : 'Manage your store\'s product catalog.'}
                     </p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-200"
+                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center space-x-3 hover:bg-slate-900 transition-all shadow-xl shadow-indigo-200"
                 >
                     <Plus className="w-4 h-4" />
-                    <span>{isInventoryView ? 'Inscribe New Stock' : 'Inscribe New Object'}</span>
+                    <span>{isInventoryView ? 'Add New Stock' : 'Add New Product'}</span>
                 </button>
             </div>
 
@@ -113,11 +113,11 @@ const ProductManagement: React.FC = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Artifact</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Series</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Price</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Inventory</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Control</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Product</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Price</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stock</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -132,7 +132,7 @@ const ProductManagement: React.FC = () => {
                                                 <h4 className="font-bold text-slate-900 text-sm line-clamp-1 flex items-center gap-2">
                                                     {p.name}
                                                     {p.isHero && (
-                                                        <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-black">Hero</span>
+                                                        <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Hero</span>
                                                     )}
                                                 </h4>
                                                 <span className="text-[10px] font-mono text-slate-400">#{p._id.slice(-8).toUpperCase()}</span>
@@ -140,11 +140,11 @@ const ProductManagement: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-8 py-4">
-                                        <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
                                             {typeof p.category === 'string' ? p.category : p.category?.name}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-4 font-black text-slate-900 text-sm">
+                                    <td className="px-8 py-4 font-bold text-slate-900 text-sm">
                                         ${p.price.toFixed(2)}
                                     </td>
                                     <td className="px-8 py-4">

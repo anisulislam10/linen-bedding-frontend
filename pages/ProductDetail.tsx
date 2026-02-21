@@ -80,8 +80,8 @@ const ProductDetail: React.FC = () => {
 
   if (error || !product) return (
     <div className="max-w-7xl mx-auto px-4 py-24 text-center">
-      <h2 className="text-2xl font-black text-gray-900 mb-4">{error || 'Product not found'}</h2>
-      <Link to="/products" className="text-indigo-600 font-bold hover:underline">Back to Collective</Link>
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">{error || 'Product not found'}</h2>
+      <Link to="/products" className="text-indigo-600 font-bold hover:underline">Back to Products</Link>
     </div>
   );
 
@@ -111,7 +111,7 @@ const ProductDetail: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="aspect-square rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center text-gray-300 text-[10px] font-black uppercase tracking-widest">
+              <div className="aspect-square rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center text-gray-300 text-[10px] font-bold uppercase tracking-widest">
                 No Gallery
               </div>
             )}
@@ -122,10 +122,10 @@ const ProductDetail: React.FC = () => {
         {/* Content */}
         <div className="flex flex-col">
           <div className="mb-8">
-            <span className="inline-block bg-indigo-50 text-indigo-600 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+            <span className="inline-block bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
               {product.category}
             </span>
-            <h1 className="text-4xl font-black text-gray-900 mb-4">{product.name}</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <div className="flex text-yellow-400">
@@ -142,21 +142,21 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-4xl font-black text-gray-900 mb-4">${product.price.toFixed(2)}</p>
+          <p className="text-4xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</p>
 
           {/* Stock Availability Indicator */}
           <div className="mb-8">
             {product.stock > 0 ? (
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${product.stock > 10 ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${product.stock > 10 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  {product.stock > 10 ? 'Artifact Available' : `Limited Stock: ${product.stock} Units Remaining`}
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${product.stock > 10 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {product.stock > 10 ? 'In Stock' : `Limited Stock: ${product.stock} Units Remaining`}
                 </p>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-rose-600">Artifact Currently Departed (Out of Stock)</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-rose-600">Artifact Currently Departed (Out of Stock)</p>
               </div>
             )}
           </div>
@@ -173,7 +173,7 @@ const ProductDetail: React.FC = () => {
                   disabled={product.stock === 0}
                   className="text-gray-400 hover:text-gray-900 p-2 font-bold disabled:opacity-20"
                 >-</button>
-                <span className="w-12 text-center font-black text-gray-900">{product.stock === 0 ? 0 : quantity}</span>
+                <span className="w-12 text-center font-bold text-gray-900">{product.stock === 0 ? 0 : quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                   disabled={product.stock === 0 || quantity >= product.stock}
@@ -183,7 +183,7 @@ const ProductDetail: React.FC = () => {
               <button
                 onClick={() => addToCart(product, quantity)}
                 disabled={product.stock === 0}
-                className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black flex items-center justify-center space-x-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
+                className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center space-x-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
               >
                 <ShoppingCart className="h-6 w-6" />
                 <span>{product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
@@ -251,7 +251,7 @@ const ProductDetail: React.FC = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab.toLowerCase())}
-              className={`pb-2 sm:pb-3 md:pb-4 text-xs sm:text-sm font-black uppercase tracking-widest transition-all relative ${activeTab === tab.toLowerCase() ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-900'}`}
+              className={`pb-2 sm:pb-3 md:pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${activeTab === tab.toLowerCase() ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-900'}`}
             >
               {tab}
               {activeTab === tab.toLowerCase() && (
@@ -277,7 +277,7 @@ const ProductDetail: React.FC = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 italic">No specifications available for this artifact.</p>
+                <p className="text-gray-400 italic">No specifications available for this product.</p>
               )}
             </div>
           )}
@@ -289,14 +289,14 @@ const ProductDetail: React.FC = () => {
                   {!showReviewForm ? (
                     <button
                       onClick={() => setShowReviewForm(true)}
-                      className="bg-indigo-600 text-white px-8 py-3 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                      className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
                     >
                       Write a Review
                     </button>
                   ) : (
                     <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 max-w-2xl animate-in fade-in slide-in-from-top-4 duration-300">
                       <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Post Review</h3>
+                        <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">Submit Review</h3>
                         <button onClick={() => setShowReviewForm(false)} className="text-gray-400 hover:text-gray-900">
                           <X className="h-5 w-5" />
                         </button>
@@ -335,7 +335,7 @@ const ProductDetail: React.FC = () => {
                       }} className="space-y-6">
                         <div className="flex flex-wrap items-center gap-8">
                           <div>
-                            <label className="block text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Rating</label>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Rating</label>
                             <div className="flex space-x-1">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -351,7 +351,7 @@ const ProductDetail: React.FC = () => {
                           </div>
 
                           <div>
-                            <label className="block text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Visuals (Max 3)</label>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Photos (Max 3)</label>
                             <div className="flex gap-2">
                               {imagePreviews.map((preview, i) => (
                                 <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden group">
@@ -398,7 +398,7 @@ const ProductDetail: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Commentary</label>
+                          <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Comment</label>
                           <textarea
                             required
                             value={comment}
@@ -412,16 +412,16 @@ const ProductDetail: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowReviewForm(false)}
-                            className="flex-1 px-6 py-3 border border-gray-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all"
+                            className="flex-1 px-6 py-3 border border-gray-200 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white transition-all"
                           >
                             Discard
                           </button>
                           <button
                             type="submit"
                             disabled={submittingReview}
-                            className="flex-[2] bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all disabled:opacity-50 shadow-xl shadow-slate-100"
+                            className="flex-[2] bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all disabled:opacity-50 shadow-xl shadow-slate-100"
                           >
-                            {submittingReview ? 'Syncing...' : 'Publish Insight'}
+                            {submittingReview ? 'Submitting...' : 'Publish Review'}
                           </button>
                         </div>
                       </form>
@@ -433,7 +433,7 @@ const ProductDetail: React.FC = () => {
               {!isLoggedIn && (
                 <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 text-center">
                   <p className="text-gray-500 font-bold mb-4">Want to share your thoughts?</p>
-                  <Link to="/login" className="inline-block bg-black text-white px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs hover:bg-gray-800 transition-all">
+                  <Link to="/login" className="inline-block bg-black text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-gray-800 transition-all">
                     Sign in to Review
                   </Link>
                 </div>
@@ -444,13 +444,13 @@ const ProductDetail: React.FC = () => {
                   <div className="bg-green-500 rounded-full p-2">
                     <ShieldCheck className="h-5 w-5 text-white" />
                   </div>
-                  <p className="text-green-800 font-bold">You've already contributed your perspective on this artifact.</p>
+                  <p className="text-green-800 font-bold">You've already contributed your perspective on this product.</p>
                 </div>
               )}
 
               <div className="space-y-8">
                 {reviews.length === 0 ? (
-                  <p className="text-gray-400 italic">No reviews yet for this artifact.</p>
+                  <p className="text-gray-400 italic">No reviews yet for this product.</p>
                 ) : (
                   reviews.map(review => (
                     <div key={review._id} className="bg-gray-50 p-8 rounded-3xl">

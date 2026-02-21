@@ -123,11 +123,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
             <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
                 <div className="p-8 border-b border-slate-50 flex items-center justify-between">
                     <div>
-                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block mb-1">
-                            Registry Interface
+                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest block mb-1">
+                            Product Editor
                         </span>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tighter">
-                            {product ? 'MODIFY ARTIFACT' : 'INSCRIBE NEW OBJECT'}
+                        <h2 className="text-3xl font-bold text-slate-900 tracking-tighter">
+                            {product ? 'EDIT PRODUCT' : 'ADD NEW PRODUCT'}
                         </h2>
                     </div>
                     <button onClick={onClose} className="p-3 hover:bg-slate-50 rounded-2xl transition-all">
@@ -138,7 +138,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 space-y-12">
                     {/* Visual Assets */}
                     <section>
-                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
                             <div className="w-1 h-3 bg-indigo-500"></div>
                             Visual Assets
                         </h3>
@@ -160,7 +160,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                             ))}
                             <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all text-slate-400 hover:text-indigo-600">
                                 <Upload className="w-6 h-6 mb-2" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Upload Image</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest">Upload Image</span>
                                 <input type="file" multiple onChange={handleFileChange} className="hidden" />
                             </label>
                         </div>
@@ -169,18 +169,18 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                     {/* Core Metadata */}
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-6">
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-l-2 border-slate-300 pl-3">Designation</h3>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-l-2 border-slate-300 pl-3">Product Name</h3>
                             <input
                                 required
                                 type="text"
-                                placeholder="Artifact Name"
+                                placeholder="Product Name"
                                 className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                             />
                             <textarea
                                 required
-                                placeholder="Registry Description"
+                                placeholder="Product Description"
                                 rows={4}
                                 className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
                                 value={formData.description}
@@ -188,7 +188,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                             />
                         </div>
                         <div className="space-y-6">
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-l-2 border-slate-300 pl-3">Specifications</h3>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-l-2 border-slate-300 pl-3">Specifications</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <input
                                     required
@@ -213,7 +213,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                                 value={formData.category}
                                 onChange={e => setFormData({ ...formData, category: e.target.value })}
                             >
-                                <option value="">Select Classification</option>
+                                <option value="">Select Category</option>
                                 {categories.map(cat => (
                                     <option key={cat._id} value={cat._id}>{cat.name}</option>
                                 ))}
@@ -234,7 +234,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                                     onChange={e => setFormData({ ...formData, isHero: e.target.checked })}
                                 />
                                 <label htmlFor="isHero" className="text-sm font-bold text-slate-700 cursor-pointer select-none">
-                                    Feature as Hero Artifact
+                                    Feature as Hero Product
                                 </label>
                             </div>
                         </div>
@@ -242,7 +242,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
 
                     {/* Detailed Specifications */}
                     <section>
-                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
                             <div className="w-1 h-3 bg-indigo-500"></div>
                             Detailed Specifications
                         </h3>
@@ -296,16 +296,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                 </form>
 
                 <div className="p-8 bg-slate-50 flex items-center justify-end space-x-6">
-                    <button onClick={onClose} className="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
+                    <button onClick={onClose} className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
                         Discard Changes
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="bg-slate-900 text-white px-10 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center space-x-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
+                        className="bg-slate-900 text-white px-10 py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-[0.2em] flex items-center space-x-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
                     >
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                        <span>{product ? 'Commit Changes' : 'Execute Inscription'}</span>
+                        <span>{product ? 'Save Changes' : 'Create Product'}</span>
                     </button>
                 </div>
             </div>

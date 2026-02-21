@@ -18,13 +18,17 @@ interface HeroSlide {
     image: string;
 }
 
-const ContentManagement: React.FC = () => {
+interface ContentManagementProps {
+    overrideTab?: 'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer';
+    isEmbedded?: boolean;
+}
+
+const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEmbedded = false }) => {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer' | 'payment'>('hero');
+    const [activeTab, setActiveTab] = useState<'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer'>('hero');
 
-    const [paymentSettings, setPaymentSettings] = useState<GatewaySetting[]>([]);
 
     // Legal Content States
     const [legalData, setLegalData] = useState({
@@ -98,20 +102,21 @@ const ContentManagement: React.FC = () => {
 
     useEffect(() => {
         fetchContent();
-    }, []);
+        if (overrideTab) {
+            setActiveTab(overrideTab);
+        }
+    }, [overrideTab]);
 
     const fetchContent = async () => {
         try {
             setLoading(true);
-            const [content, productsData, privacyData, termsData, paymentData] = await Promise.all([
+            const [content, productsData, privacyData, termsData] = await Promise.all([
                 contentService.getContent('home_page'),
                 productService.getProducts({ limit: 100 }),
                 contentService.getContent('privacy_policy').catch(() => null),
-                contentService.getContent('terms_service').catch(() => null),
-                paymentService.getSettings().catch(() => [])
+                contentService.getContent('terms_service').catch(() => null)
             ]);
             setAllProducts(productsData.products);
-            setPaymentSettings(paymentData);
 
             if (privacyData) setLegalData(prev => ({ ...prev, privacy: privacyData }));
             if (termsData) setLegalData(prev => ({ ...prev, terms: termsData }));
@@ -264,20 +269,6 @@ const ContentManagement: React.FC = () => {
         }
     };
 
-    const handlePaymentSave = async (gateway: string) => {
-        const setting = paymentSettings.find(s => s.gateway === gateway);
-        if (!setting) return;
-
-        setSaving(true);
-        try {
-            await paymentService.updateSetting(setting);
-            toast.success(`${gateway.toUpperCase()} configuration updated`);
-        } catch (err: any) {
-            toast.error('Failed to update payment settings: ' + err.message);
-        } finally {
-            setSaving(false);
-        }
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -319,7 +310,7 @@ const ContentManagement: React.FC = () => {
     const TabButton: React.FC<{ id: typeof activeTab; label: string; icon: any }> = ({ id, label, icon: Icon }) => (
         <button
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all min-w-[160px] ${activeTab === id
+            className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all min-w-[160px] ${activeTab === id
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100'
                 : 'bg-white text-slate-400 hover:text-slate-900 shadow-sm border border-slate-50'
                 }`}
@@ -332,55 +323,58 @@ const ContentManagement: React.FC = () => {
     if (loading) return <div className="h-[80vh] flex items-center justify-center"><Loader size="xl" color="#4F46E5" /></div>;
 
     return (
-        <div className="space-y-10 max-w-6xl mx-auto pb-20 px-4 md:px-0">
+        <div className={`space-y-10 max-w-6xl mx-auto pb-20 ${!isEmbedded ? 'px-4 md:px-0' : ''}`}>
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                <div>
-                    <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase mb-2">CMS Architecture</h1>
-                    <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">Global storefront identity coordinator.</p>
-                </div>
-                {activeTab !== 'legal' ? (
-                    <button
-                        onClick={handleSubmit}
-                        disabled={saving}
-                        className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all shadow-2xl shadow-indigo-100 disabled:opacity-50"
-                    >
-                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        <span>Sync Global Logic</span>
-                    </button>
-                ) : (
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => handleLegalSubmit('privacy')}
-                            disabled={saving}
-                            className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
-                        >
-                            <ShieldCheck className="w-4 h-4" /> Save Privacy
-                        </button>
-                        <button
-                            onClick={() => handleLegalSubmit('terms')}
-                            disabled={saving}
-                            className="bg-slate-900 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-black transition-all shadow-lg shadow-slate-100 disabled:opacity-50"
-                        >
-                            <Layout className="w-4 h-4" /> Save Terms
-                        </button>
+            {!isEmbedded && (
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div>
+                        <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase mb-2">Content Management</h1>
+                        <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">Manage your website content and policies.</p>
                     </div>
-                )}
-            </div>
+                    {activeTab !== 'legal' ? (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={saving}
+                            className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all shadow-2xl shadow-indigo-100 disabled:opacity-50"
+                        >
+                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            <span>Save Page Changes</span>
+                        </button>
+                    ) : (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => handleLegalSubmit('privacy')}
+                                disabled={saving}
+                                className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                            >
+                                <ShieldCheck className="w-4 h-4" /> Save Privacy
+                            </button>
+                            <button
+                                onClick={() => handleLegalSubmit('terms')}
+                                disabled={saving}
+                                className="bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-black transition-all shadow-lg shadow-slate-100 disabled:opacity-50"
+                            >
+                                <Layout className="w-4 h-4" /> Save Terms
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Tab Navigation */}
-            <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                <TabButton id="hero" label="Hero Engine" icon={Layout} />
-                <TabButton id="impact" label="Impact Story" icon={Info} />
-                <TabButton id="store" label="Store Core" icon={ShoppingCart} />
-                <TabButton id="flash" label="Flash Sale" icon={Clock} />
-                <TabButton id="footer" label="Footer/Social" icon={Share2} />
-                <TabButton id="payment" label="Payment Center" icon={CreditCard} />
-                <TabButton id="legal" label="Legal Center" icon={ShieldCheck} />
-            </div>
+            {!isEmbedded && (
+                <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                    <TabButton id="hero" label="Home Slides" icon={Layout} />
+                    <TabButton id="impact" label="Impact Story" icon={Info} />
+                    <TabButton id="store" label="Store Settings" icon={ShoppingCart} />
+                    <TabButton id="flash" label="Flash Sale" icon={Clock} />
+                    <TabButton id="footer" label="Footer / Social" icon={Share2} />
+                    <TabButton id="legal" label="Legal Policies" icon={ShieldCheck} />
+                </div>
+            )}
 
             {/* Dynamic Content Area */}
-            <div className="bg-white/40 backdrop-blur-xl rounded-[3rem] border border-slate-100 p-8 md:p-14 shadow-sm min-h-[700px]">
+            <div className={`${!isEmbedded ? 'bg-white/40 backdrop-blur-xl rounded-[3rem] border border-slate-100 p-8 md:p-14 shadow-sm' : ''} min-h-[700px]`}>
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
@@ -394,18 +388,18 @@ const ContentManagement: React.FC = () => {
                             <div className="space-y-12">
                                 <div className="flex justify-between items-center bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
                                     <div>
-                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Sequence Controller</h3>
-                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                                        <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Home Slides</h3>
+                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
                                             <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                                            Active Leads: {formData.heroSlides.length}
+                                            Active Slides: {formData.heroSlides.length}
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={addSlide}
-                                        className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-indigo-600 shadow-xl shadow-indigo-100"
+                                        className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-indigo-600 shadow-xl shadow-indigo-100"
                                     >
-                                        <Plus className="w-5 h-5" /> Initialize Sequence
+                                        <Plus className="w-5 h-5" /> New Slide
                                     </button>
                                 </div>
 
@@ -422,14 +416,14 @@ const ContentManagement: React.FC = () => {
                                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-14">
                                                 <div className="lg:col-span-4 space-y-4">
                                                     <div className="flex justify-between items-center ml-1">
-                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Asset Configuration</label>
-                                                        <span className="text-[9px] font-black text-indigo-500 uppercase">4:5 Portrait</span>
+                                                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Slide Image</label>
+                                                        <span className="text-[9px] font-bold text-indigo-500 uppercase">4:5 Portrait</span>
                                                     </div>
                                                     <div className="aspect-[4/5] bg-slate-50 rounded-[2.5rem] overflow-hidden relative group border border-slate-100 shadow-inner">
                                                         {slidePreviews[index] ? <img src={slidePreviews[index]!} className="w-full h-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-slate-200"><ImageIcon className="w-20 h-20" /></div>}
                                                         <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md cursor-pointer text-white">
                                                             <div className="bg-white/20 p-5 rounded-full mb-4 scale-75 group-hover:scale-100 transition-transform"><Upload className="w-8 h-8" /></div>
-                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Propogate Neural Asset</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Upload Image</span>
                                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'slide', index)} />
                                                         </label>
                                                     </div>
@@ -438,28 +432,28 @@ const ContentManagement: React.FC = () => {
                                                 <div className="lg:col-span-8 space-y-8">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-14 lg:mt-0">
                                                         <div className="space-y-3">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Supra-lead (Identity)</label>
-                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[11px] font-black uppercase tracking-widest placeholder:text-slate-300 focus:ring-2 ring-indigo-500/10 transition-all" placeholder="e.g. ORGANIC LINEN" value={slide.subtitle} onChange={e => { const s = [...formData.heroSlides]; s[index].subtitle = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Badge Title (Small)</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[11px] font-bold uppercase tracking-widest placeholder:text-slate-300 focus:ring-2 ring-indigo-500/10 transition-all" placeholder="e.g. ORGANIC LINEN" value={slide.subtitle} onChange={e => { const s = [...formData.heroSlides]; s[index].subtitle = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
                                                         </div>
                                                         <div className="space-y-3">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Emphasis Token (Italic)</label>
-                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[11px] font-black uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" placeholder="e.g. LIMITED" value={slide.highlight} onChange={e => { const s = [...formData.heroSlides]; s[index].highlight = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Highlight Text (Italic)</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[11px] font-bold uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" placeholder="e.g. LIMITED" value={slide.highlight} onChange={e => { const s = [...formData.heroSlides]; s[index].highlight = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
                                                         </div>
                                                         <div className="md:col-span-2 space-y-3">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Master Objective Heading</label>
-                                                            <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-2xl font-black tracking-tighter" placeholder="Collection Title" value={slide.title} onChange={e => { const s = [...formData.heroSlides]; s[index].title = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Main Heading</label>
+                                                            <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-2xl font-bold tracking-tighter" placeholder="Collection Title" value={slide.title} onChange={e => { const s = [...formData.heroSlides]; s[index].title = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
                                                         </div>
                                                         <div className="md:col-span-2 space-y-3">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Narrative Composition</label>
+                                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Description</label>
                                                             <textarea className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 transition-all" rows={4} placeholder="Detailed value proposition..." value={slide.description} onChange={e => { const s = [...formData.heroSlides]; s[index].description = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
                                                         </div>
                                                         <div className="space-y-3">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Primary Call to Action</label>
-                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[10px] font-black uppercase tracking-widest" value={slide.buttonText} onChange={e => { const s = [...formData.heroSlides]; s[index].buttonText = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Button Text</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[10px] font-bold uppercase tracking-widest" value={slide.buttonText} onChange={e => { const s = [...formData.heroSlides]; s[index].buttonText = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
                                                         </div>
                                                         <div className="space-y-3">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Routing Matrix (URL)</label>
-                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[10px] font-black" value={slide.link} onChange={e => { const s = [...formData.heroSlides]; s[index].link = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Button Link (URL)</label>
+                                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-[10px] font-bold" value={slide.link} onChange={e => { const s = [...formData.heroSlides]; s[index].link = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -474,27 +468,27 @@ const ContentManagement: React.FC = () => {
                         {activeTab === 'impact' && (
                             <div className="space-y-12">
                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
-                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Impact Narrative</h3>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Refine your brand's editorial impact story.</p>
+                                    <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Story Settings</h3>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Refine your brand's editorial impact story.</p>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
                                     <div className="space-y-10">
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Editorial Heading</label>
-                                            <input type="text" className="w-full p-7 bg-slate-50 border-none rounded-[2.5rem] text-xl font-black focus:ring-2 ring-indigo-500/10" placeholder="The Vision" value={formData.impact.title} onChange={e => setFormData({ ...formData, impact: { ...formData.impact, title: e.target.value } })} />
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Story Title</label>
+                                            <input type="text" className="w-full p-7 bg-slate-50 border-none rounded-[2.5rem] text-xl font-bold focus:ring-2 ring-indigo-500/10" placeholder="The Vision" value={formData.impact.title} onChange={e => setFormData({ ...formData, impact: { ...formData.impact, title: e.target.value } })} />
                                         </div>
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Story Composition</label>
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Story Description</label>
                                             <textarea className="w-full p-8 bg-slate-50 border-none rounded-[3rem] text-sm font-medium leading-[2] resize-none focus:ring-2 ring-indigo-500/10 h-[400px]" placeholder="Craft your narrative..." value={formData.impact.description} onChange={e => setFormData({ ...formData, impact: { ...formData.impact, description: e.target.value } })} />
                                         </div>
                                     </div>
                                     <div className="space-y-6">
-                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Brand Asset (Editorial)</label>
+                                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Featured Image</label>
                                         <div className="aspect-[4/5] bg-slate-50 rounded-[4rem] overflow-hidden relative group shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all hover:shadow-indigo-500/10 border border-slate-100">
                                             {impactPreview ? <img src={impactPreview} className="w-full h-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center text-slate-200"><ImageIcon className="w-24 h-24" /></div>}
                                             <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-xl cursor-pointer text-white text-center p-10">
                                                 <div className="bg-white/20 p-6 rounded-full mb-6 transform scale-75 group-hover:scale-100 transition-transform"><Upload className="w-10 h-10" /></div>
-                                                <span className="text-xs font-black uppercase tracking-[0.25em] leading-relaxed">Transition Narrative Visual</span>
+                                                <span className="text-xs font-bold uppercase tracking-[0.25em] leading-relaxed">Upload Featured Image</span>
                                                 <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'impact')} />
                                             </label>
                                         </div>
@@ -507,18 +501,18 @@ const ContentManagement: React.FC = () => {
                         {activeTab === 'store' && (
                             <div className="space-y-12">
                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
-                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Core Configuration</h3>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Manage essential site metrics and aesthetics.</p>
+                                    <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Storefront Settings</h3>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Manage essential site settings and branding.</p>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                                     <div className="lg:col-span-4 space-y-10">
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Brand Ident (Logo)</label>
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Store Logo</label>
                                             <div className="aspect-square bg-slate-50 rounded-[3rem] border border-slate-100 overflow-hidden relative group">
                                                 {logoPreview ? <img src={logoPreview} className="w-full h-full object-contain p-10" /> : <div className="absolute inset-0 flex items-center justify-center text-slate-200"><ImageIcon className="w-16 h-16" /></div>}
                                                 <label className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm cursor-pointer text-white text-center">
                                                     <Upload className="w-7 h-7 mb-2" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">Swap Logo</span>
+                                                    <span className="text-[9px] font-bold uppercase tracking-widest">Swap Logo</span>
                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} />
                                                 </label>
                                             </div>
@@ -534,24 +528,24 @@ const ContentManagement: React.FC = () => {
                                     <div className="lg:col-span-8 space-y-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Global Store Name</label>
-                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest" value={formData.siteSettings.siteName} onChange={e => setFormData({ ...formData, siteSettings: { ...formData.siteSettings, siteName: e.target.value } })} />
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Store Name</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold uppercase tracking-widest" value={formData.siteSettings.siteName} onChange={e => setFormData({ ...formData, siteSettings: { ...formData.siteSettings, siteName: e.target.value } })} />
                                             </div>
                                             <div className="space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Announcement State</label>
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Announcement Bar</label>
                                                 <div className="flex bg-slate-50 p-6 rounded-2xl items-center justify-between">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{formData.header.announcementEnabled ? 'Active' : 'Disabled'}</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{formData.header.announcementEnabled ? 'Active' : 'Disabled'}</span>
                                                     <button onClick={() => setFormData({ ...formData, header: { ...formData.header, announcementEnabled: !formData.header.announcementEnabled } })} className={`w-14 h-8 rounded-full transition-all relative ${formData.header.announcementEnabled ? 'bg-indigo-600' : 'bg-slate-200'}`}>
                                                         <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${formData.header.announcementEnabled ? 'right-1' : 'left-1'}`} />
                                                     </button>
                                                 </div>
                                             </div>
                                             <div className="md:col-span-2 space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Top Bar Announcement Text</label>
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Announcement Text</label>
                                                 <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold" value={formData.header.topBarText} onChange={e => setFormData({ ...formData, header: { ...formData.header, topBarText: e.target.value } })} />
                                             </div>
                                             <div className="md:col-span-2 space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">SEO Keyword Architecture</label>
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">SEO Keywords</label>
                                                 <textarea className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-medium leading-relaxed resize-none" rows={4} placeholder="linen, organic, bedding, sustainable..." value={formData.siteSettings.seoKeywords} onChange={e => setFormData({ ...formData, siteSettings: { ...formData.siteSettings, seoKeywords: e.target.value } })} />
                                             </div>
                                         </div>
@@ -565,30 +559,30 @@ const ContentManagement: React.FC = () => {
                             <div className="space-y-12">
                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50 flex justify-between items-center">
                                     <div>
-                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Temporal Pulse</h3>
-                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Coordinate limited-availability event windows.</p>
+                                        <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Flash Sale</h3>
+                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Coordinate limited-time promotional events.</p>
                                     </div>
-                                    <div className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${formData.flashSale.enabled ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {formData.flashSale.enabled ? 'Pulse Live' : 'Pulse Terminated'}
+                                    <div className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${formData.flashSale.enabled ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                                        {formData.flashSale.enabled ? 'Sale Active' : 'Sale Inactive'}
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                                     <div className="lg:col-span-4 space-y-8">
                                         <div className="bg-slate-900 rounded-[3rem] p-10 text-white space-y-6 shadow-2xl shadow-slate-200">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Status</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Status</span>
                                                 <button onClick={() => setFormData({ ...formData, flashSale: { ...formData.flashSale, enabled: !formData.flashSale.enabled } })} className={`w-12 h-6 rounded-full transition-all relative ${formData.flashSale.enabled ? 'bg-indigo-500' : 'bg-white/10'}`}>
                                                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.flashSale.enabled ? 'right-1' : 'left-1'}`} />
                                                 </button>
                                             </div>
                                             <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Expiration Matrix</label>
-                                                <input type="datetime-local" className="w-full bg-white/5 border-none rounded-2xl p-4 text-xs font-black text-white focus:ring-1 ring-indigo-500" value={formData.flashSale.endTime} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, endTime: e.target.value } })} />
+                                                <label className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em]">Sale End Time</label>
+                                                <input type="datetime-local" className="w-full bg-white/5 border-none rounded-2xl p-4 text-xs font-bold text-white focus:ring-1 ring-indigo-500" value={formData.flashSale.endTime} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, endTime: e.target.value } })} />
                                             </div>
                                             <div className="pt-4 space-y-4">
                                                 <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
-                                                    <h4 className="text-[10px] font-black uppercase text-indigo-400 tracking-widest mb-1">Preview Heading</h4>
-                                                    <p className="text-lg font-black tracking-tight">{formData.flashSale.title}</p>
+                                                    <h4 className="text-[10px] font-bold uppercase text-indigo-400 tracking-widest mb-1">Preview Title</h4>
+                                                    <p className="text-lg font-bold tracking-tight">{formData.flashSale.title}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -596,16 +590,16 @@ const ContentManagement: React.FC = () => {
                                     <div className="lg:col-span-8 space-y-10">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Focal Title</label>
-                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest" value={formData.flashSale.title} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, title: e.target.value } })} />
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Main Title</label>
+                                                <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold uppercase tracking-widest" value={formData.flashSale.title} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, title: e.target.value } })} />
                                             </div>
                                             <div className="space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Supra Detail</label>
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Subtitle</label>
                                                 <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold" value={formData.flashSale.subtitle} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, subtitle: e.target.value } })} />
                                             </div>
                                         </div>
                                         <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Product Alignment Matrix</h4>
+                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Featured Products</h4>
                                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto p-2 scrollbar-hide">
                                                 {allProducts.map(product => {
                                                     const isSelected = formData.flashSale.products.includes(product._id);
@@ -635,18 +629,18 @@ const ContentManagement: React.FC = () => {
                         {activeTab === 'footer' && (
                             <div className="space-y-12">
                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
-                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Boundary Analytics</h3>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Configure base components and social network pointers.</p>
+                                    <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Footer Settings</h3>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Configure footer content and social media links.</p>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                                     <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-12">
                                         <div className="space-y-10">
                                             <div className="space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Global Copyright Formula</label>
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Copyright Text</label>
                                                 <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-[11px] font-bold" value={formData.footer.copyrightText} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, copyrightText: e.target.value } })} />
                                             </div>
                                             <div className="space-y-4">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Newsletter Incentive</label>
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Newsletter Text</label>
                                                 <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-[11px] font-bold" value={formData.footer.newsletterText} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, newsletterText: e.target.value } })} />
                                             </div>
                                             <div className="space-y-4">
@@ -657,11 +651,11 @@ const ContentManagement: React.FC = () => {
                                         <div className="bg-indigo-50/30 p-10 rounded-[4rem] border border-indigo-100/50 space-y-8">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <Share2 className="w-5 h-5 text-indigo-600" />
-                                                <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-900">Social Graph Projections</h4>
+                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-indigo-900">Social Links</h4>
                                             </div>
                                             {Object.entries(formData.footer.socialLinks).map(([key, value]) => (
                                                 <div key={key} className="space-y-2">
-                                                    <label className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.2em] ml-1">{key} Matrix</label>
+                                                    <label className="text-[8px] font-bold text-indigo-400 uppercase tracking-[0.2em] ml-1">{key} Link</label>
                                                     <div className="flex bg-white rounded-2xl overflow-hidden shadow-sm border border-indigo-100/50">
                                                         <div className="p-4 bg-indigo-50 text-indigo-600 border-r border-indigo-100"><Share2 className="w-4 h-4" /></div>
                                                         <input type="text" className="flex-1 p-4 border-none text-[11px] font-bold text-slate-700" value={value} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, socialLinks: { ...formData.footer.socialLinks, [key]: e.target.value } } })} />
@@ -678,8 +672,8 @@ const ContentManagement: React.FC = () => {
                         {activeTab === 'legal' && (
                             <div className="space-y-12">
                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
-                                    <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Legal Center</h3>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Finalize contractual and privacy frameworks.</p>
+                                    <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Legal Center</h3>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Manage policies and terms of service.</p>
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                                     {/* Privacy Policy */}
@@ -687,15 +681,15 @@ const ContentManagement: React.FC = () => {
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-4">
                                                 <div className="bg-indigo-50 p-4 rounded-2xl text-indigo-600"><ShieldCheck className="w-6 h-6" /></div>
-                                                <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Privacy Policy</h4>
+                                                <h4 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Privacy Policy</h4>
                                             </div>
                                         </div>
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Effective Chronology</label>
-                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" value={legalData.privacy.effectiveDate} onChange={e => setLegalData({ ...legalData, privacy: { ...legalData.privacy, effectiveDate: e.target.value } })} placeholder="e.g. Feb 8, 2026" />
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Effective Date</label>
+                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-xs font-bold uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" value={legalData.privacy.effectiveDate} onChange={e => setLegalData({ ...legalData, privacy: { ...legalData.privacy, effectiveDate: e.target.value } })} placeholder="e.g. Feb 8, 2026" />
                                         </div>
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contractual Body (HTML Supported)</label>
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Policy Content (HTML Supported)</label>
                                             <textarea className="w-full p-7 bg-slate-50 border-none rounded-3xl text-sm font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 h-[500px]" value={legalData.privacy.body} onChange={e => setLegalData({ ...legalData, privacy: { ...legalData.privacy, body: e.target.value } })} placeholder="<h1>Heading</h1><p>Body copy...</p>" />
                                         </div>
                                     </div>
@@ -705,119 +699,17 @@ const ContentManagement: React.FC = () => {
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-4">
                                                 <div className="bg-slate-900 p-4 rounded-2xl text-white"><Layout className="w-6 h-6" /></div>
-                                                <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Terms of Service</h4>
+                                                <h4 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Terms of Service</h4>
                                             </div>
                                         </div>
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Latest Revision</label>
-                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" value={legalData.terms.lastUpdated} onChange={e => setLegalData({ ...legalData, terms: { ...legalData.terms, lastUpdated: e.target.value } })} placeholder="e.g. Feb 8, 2026" />
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Last Updated</label>
+                                            <input type="text" className="w-full p-5 bg-slate-50 border-none rounded-2xl text-xs font-bold uppercase tracking-widest focus:ring-2 ring-indigo-500/10 transition-all" value={legalData.terms.lastUpdated} onChange={e => setLegalData({ ...legalData, terms: { ...legalData.terms, lastUpdated: e.target.value } })} placeholder="e.g. Feb 8, 2026" />
                                         </div>
                                         <div className="space-y-4">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contractual Body (HTML Supported)</label>
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Terms Content (HTML Supported)</label>
                                             <textarea className="w-full p-7 bg-slate-50 border-none rounded-3xl text-sm font-medium leading-relaxed resize-none focus:ring-2 ring-indigo-500/10 h-[500px]" value={legalData.terms.body} onChange={e => setLegalData({ ...legalData, terms: { ...legalData.terms, body: e.target.value } })} placeholder="<h1>Heading</h1><p>Body copy...</p>" />
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* 7. Payment Tab */}
-                        {activeTab === 'payment' && (
-                            <div className="space-y-12">
-                                <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50 flex justify-between items-center">
-                                    <div>
-                                        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Payment Architecture</h3>
-                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Configure gateway protocols and credential matrix.</p>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-10">
-                                    {/* Stripe Configuration */}
-                                    {['stripe'].map(gw => {
-                                        const setting = paymentSettings.find(s => s.gateway === gw) || {
-                                            gateway: gw as any,
-                                            mode: 'test',
-                                            isActive: false,
-                                            testSecretKey: '',
-                                            testPublishableKey: '',
-                                            liveSecretKey: '',
-                                            livePublishableKey: ''
-                                        };
-
-                                        const updateGW = (updates: Partial<GatewaySetting>) => {
-                                            const exists = paymentSettings.find(s => s.gateway === gw);
-                                            if (exists) {
-                                                setPaymentSettings(paymentSettings.map(s => s.gateway === gw ? { ...s, ...updates } : s));
-                                            } else {
-                                                setPaymentSettings([...paymentSettings, { ...setting, ...updates }]);
-                                            }
-                                        };
-
-                                        return (
-                                            <div key={gw} className="bg-white border border-slate-100 rounded-[3rem] p-10 relative group transition-all hover:shadow-2xl hover:shadow-indigo-50/30">
-                                                <div className="flex justify-between items-center mb-10">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="bg-indigo-600 p-4 rounded-2xl text-white shadow-lg shadow-indigo-100"><CreditCard className="w-8 h-8" /></div>
-                                                        <div>
-                                                            <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{gw.toUpperCase()} Gateway</h4>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <div className={`w-2 h-2 rounded-full ${setting.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{setting.isActive ? 'Operational' : 'Offline'}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                                                            <button onClick={() => updateGW({ mode: 'test' })} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${setting.mode === 'test' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Test Mode</button>
-                                                            <button onClick={() => updateGW({ mode: 'live' })} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${setting.mode === 'live' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>Live Mode</button>
-                                                        </div>
-                                                        <button onClick={() => updateGW({ isActive: !setting.isActive })} className={`w-14 h-8 rounded-full transition-all relative ${setting.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                                                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${setting.isActive ? 'right-1' : 'left-1'}`} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                                    <div className="space-y-8 p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100/50">
-                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div> Test Credentials</h5>
-                                                        <div className="space-y-4">
-                                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Publishable Key</label>
-                                                            <input type="password" placeholder="pk_test_..." className="w-full p-4 bg-white border border-slate-100 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.testPublishableKey} onChange={e => updateGW({ testPublishableKey: e.target.value })} />
-                                                        </div>
-                                                        <div className="space-y-4">
-                                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Secret Key</label>
-                                                            <input type="password" placeholder="sk_test_..." className="w-full p-4 bg-white border border-slate-100 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.testSecretKey} onChange={e => updateGW({ testSecretKey: e.target.value })} />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="space-y-8 p-8 bg-indigo-50/20 rounded-[2.5rem] border border-indigo-100/30">
-                                                        <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2"><div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div> Live Credentials</h5>
-                                                        <div className="space-y-4">
-                                                            <label className="text-[9px] font-black text-indigo-500/60 uppercase tracking-widest ml-1">Publishable Key</label>
-                                                            <input type="password" placeholder="pk_live_..." className="w-full p-4 bg-white border border-indigo-100/50 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.livePublishableKey} onChange={e => updateGW({ livePublishableKey: e.target.value })} />
-                                                        </div>
-                                                        <div className="space-y-4">
-                                                            <label className="text-[9px] font-black text-indigo-500/60 uppercase tracking-widest ml-1">Secret Key</label>
-                                                            <input type="password" placeholder="sk_live_..." className="w-full p-4 bg-white border border-indigo-100/50 rounded-xl text-xs font-medium focus:ring-2 ring-indigo-500/10" value={setting.liveSecretKey} onChange={e => updateGW({ liveSecretKey: e.target.value })} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="mt-10 flex justify-end">
-                                                    <button onClick={() => handlePaymentSave(gw)} disabled={saving} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center gap-3 disabled:opacity-50">
-                                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                                        Initialize Protocol
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* Future gateways placeholder */}
-                                    <div className="border-2 border-dashed border-slate-100 rounded-[3rem] p-16 flex flex-col items-center justify-center text-center opacity-50">
-                                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6"><Plus className="w-10 h-10 text-slate-300" /></div>
-                                        <h4 className="text-xl font-black text-slate-400 uppercase tracking-tight">Expand Gateway Matrix</h4>
-                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-2">PayPal, Klarna, and COD protocols upcoming.</p>
                                     </div>
                                 </div>
                             </div>

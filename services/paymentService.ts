@@ -33,6 +33,12 @@ export const paymentService = {
         return response.data.data;
     },
 
+    // Get active gateway settings (Safe/Public)
+    getActiveSettings: async (): Promise<GatewaySetting[]> => {
+        const response = await api.get<ApiResponse<GatewaySetting[]>>('/payment/active');
+        return response.data.data;
+    },
+
     // Update gateway setting
     updateSetting: async (setting: Partial<GatewaySetting>): Promise<GatewaySetting> => {
         const response = await api.post<ApiResponse<GatewaySetting>>('/payment/settings', setting);

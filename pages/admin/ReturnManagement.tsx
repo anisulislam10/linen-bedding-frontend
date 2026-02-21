@@ -4,18 +4,19 @@ import {
     RotateCcw,
     Search,
     Filter,
-    ChevronRight,
     Clock,
     CheckCircle2,
     XCircle,
     RefreshCcw,
     AlertCircle,
     User,
-    Package,
     ArrowUpRight,
     X,
     MessageSquare,
-    DollarSign
+    DollarSign,
+    Package,
+    ChevronRight,
+    ChevronDown
 } from 'lucide-react';
 import { returnService, ReturnRequest } from '../../services/returnService';
 import toast from 'react-hot-toast';
@@ -77,12 +78,12 @@ const ReturnManagement: React.FC = () => {
 
     const getStatusStyles = (status: string) => {
         switch (status) {
-            case 'Processing': return { bg: 'bg-amber-100', text: 'text-amber-700', icon: <Clock className="w-3 h-3" /> };
-            case 'Approved': return { bg: 'bg-blue-100', text: 'text-blue-700', icon: <CheckCircle2 className="w-3 h-3" /> };
-            case 'Returned': return { bg: 'bg-indigo-100', text: 'text-indigo-700', icon: <RefreshCcw className="w-3 h-3" /> };
-            case 'Refunded': return { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: <DollarSign className="w-3 h-3" /> };
-            case 'Rejected': return { bg: 'bg-rose-100', text: 'text-rose-700', icon: <XCircle className="w-3 h-3" /> };
-            default: return { bg: 'bg-slate-100', text: 'text-slate-700', icon: <AlertCircle className="w-3 h-3" /> };
+            case 'Processing': return { bg: 'bg-amber-50 border-amber-100', text: 'text-amber-700', icon: <Clock className="w-3 h-3" />, dot: 'bg-amber-500' };
+            case 'Approved': return { bg: 'bg-blue-50 border-blue-100', text: 'text-blue-700', icon: <CheckCircle2 className="w-3 h-3" />, dot: 'bg-blue-500' };
+            case 'Returned': return { bg: 'bg-indigo-50 border-indigo-100', text: 'text-indigo-700', icon: <RefreshCcw className="w-3 h-3" />, dot: 'bg-indigo-500' };
+            case 'Refunded': return { bg: 'bg-emerald-50 border-emerald-100', text: 'text-emerald-700', icon: <DollarSign className="w-3 h-3" />, dot: 'bg-emerald-500' };
+            case 'Rejected': return { bg: 'bg-rose-50 border-rose-100', text: 'text-rose-700', icon: <XCircle className="w-3 h-3" />, dot: 'bg-rose-500' };
+            default: return { bg: 'bg-slate-50 border-slate-100', text: 'text-slate-700', icon: <AlertCircle className="w-3 h-3" />, dot: 'bg-slate-500' };
         }
     };
 
@@ -91,19 +92,22 @@ const ReturnManagement: React.FC = () => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Return Management</h1>
-                    <p className="text-slate-500 font-medium mt-1">Process and manage customer return requests</p>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase leading-none">Returns</h1>
+                    <div className="flex items-center gap-2 mt-2">
+                        <div className="h-1 w-12 bg-indigo-600 rounded-full"></div>
+                        <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Manage customer returns and refunds.</p>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="bg-white p-1 rounded-2xl shadow-sm border border-slate-100 flex">
+                    <div className="bg-white p-1.5 rounded-[1.5rem] shadow-sm border border-slate-100 flex gap-1">
                         {['All', 'Processing', 'Approved', 'Refunded'].map((status) => (
                             <button
                                 key={status}
                                 onClick={() => setStatusFilter(status)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${statusFilter === status
-                                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
-                                    : 'text-slate-400 hover:text-slate-600'
+                                className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${statusFilter === status
+                                    ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 scale-105'
+                                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
                                     }`}
                             >
                                 {status}
@@ -113,110 +117,97 @@ const ReturnManagement: React.FC = () => {
                 </div>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {[
-                    { label: 'Total Requests', value: returns.length, icon: RotateCcw, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                    { label: 'Pending Process', value: returns.filter(r => r.status === 'Processing').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    { label: 'Approved', value: returns.filter(r => r.status === 'Approved').length, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
-                    { label: 'Completed', value: returns.filter(r => r.status === 'Refunded').length, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                        <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 ${stat.bg} ${stat.color} rounded-[1.25rem] flex items-center justify-center`}>
-                                <stat.icon className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <p className="text-2xl font-black text-slate-900">{stat.value}</p>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Search and Filters */}
-            <div className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by ID, Customer Name, or Order ID..."
-                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <button className="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-slate-800 transition-all">
-                    <Filter className="w-4 h-4" />
-                    Advanced Filters
-                </button>
-            </div>
-
             {/* List Section */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-indigo-100/20 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="border-b border-slate-50 bg-slate-50/50">
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Return ID</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Info</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reason</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</th>
+                        <tr className="border-b border-slate-100 bg-slate-50/30">
+                            <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Return ID</th>
+                            <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer</th>
+                            <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order ID</th>
+                            <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Items</th>
+                            <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                            <th className="px-8 py-6 text-right pr-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50">
+                    <tbody className="divide-y divide-slate-100">
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className="animate-pulse">
-                                    <td colSpan={6} className="px-8 py-6"><div className="h-12 bg-slate-50 rounded-xl w-full"></div></td>
+                                    <td colSpan={6} className="px-8 py-8"><div className="h-10 bg-slate-50 rounded-2xl w-full"></div></td>
                                 </tr>
                             ))
                         ) : filteredReturns.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-8 py-20 text-center">
-                                    <RotateCcw className="w-12 h-12 text-slate-100 mx-auto mb-4" />
-                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No return requests detected</p>
+                                <td colSpan={6} className="px-8 py-32 text-center">
+                                    <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                                        <RotateCcw className="w-8 h-8 text-slate-200" />
+                                    </div>
+                                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">No return requests found.</p>
                                 </td>
                             </tr>
                         ) : (
                             filteredReturns.map((ret) => {
                                 const status = getStatusStyles(ret.status);
                                 return (
-                                    <tr key={ret._id} className="hover:bg-slate-50/50 transition-all group">
-                                        <td className="px-8 py-6">
-                                            <p className="font-mono text-xs font-bold text-slate-600 uppercase">#{ret._id.slice(-8)}</p>
-                                            <p className="text-[10px] text-slate-400 mt-1 font-bold">{new Date(ret.createdAt).toLocaleDateString()}</p>
+                                    <tr key={ret._id} className="hover:bg-slate-50/30 transition-all group">
+                                        <td className="px-8 py-8">
+                                            <div className="flex flex-col">
+                                                <span className="font-mono text-[11px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tighter">RET-{ret._id.slice(-6).toUpperCase()}</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">{new Date(ret.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                            </div>
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-8 py-8">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-slate-200 group-hover:scale-110 transition-transform">
+                                                    {ret.user?.name?.slice(0, 1).toUpperCase() || 'U'}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-slate-900">{ret.user?.name || 'Anonymous'}</span>
+                                                    <span className="text-[10px] text-slate-400 font-bold lowercase tracking-tight">{ret.user?.email}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-8">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg w-fit">ORD-{ret.order?._id?.slice(-6).toUpperCase()}</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase mt-1 tracking-widest">${ret.order?.totalPrice?.toFixed(2)} Total</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-8">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-                                                    <User className="w-4 h-4 text-indigo-500" />
+                                                <div className="flex -space-x-3 overflow-hidden">
+                                                    {(ret.items || []).slice(0, 3).map((item, idx) => (
+                                                        <div key={idx} className="inline-block h-10 w-10 rounded-2xl ring-4 ring-white overflow-hidden bg-white border border-slate-100 shadow-md transform hover:translate-y-[-2px] transition-transform" title={item.product?.name}>
+                                                            <img
+                                                                src={item.product?.images?.[0]?.url || item.product?.image || '/placeholder.png'}
+                                                                alt={item.product?.name}
+                                                                className="h-full w-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Product';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                    {(ret.items?.length || 0) > 3 && (
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-[10px] font-bold text-white ring-4 ring-white shadow-md">
+                                                            +{(ret.items?.length || 0) - 3}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <p className="text-xs font-black text-slate-800">{ret.user?.name || 'Unknown'}</p>
-                                                    <p className="text-[10px] text-slate-400 font-bold">{ret.user?.email}</p>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-bold text-slate-900 uppercase tracking-tighter">{ret.items?.length || 0} Products</span>
+                                                    <span className="text-xs font-bold text-emerald-600 tracking-tighter mt-0.5">${ret.totalRefundAmount?.toFixed(2)}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <p className="text-xs font-mono font-bold text-indigo-600">ORD-{ret.order?._id?.slice(-6).toUpperCase()}</p>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Items: {ret.order?.items?.length || 0}</p>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-start gap-2 max-w-xs">
-                                                <MessageSquare className="w-4 h-4 text-slate-300 mt-0.5" />
-                                                <p className="text-xs text-slate-600 font-medium line-clamp-2">{ret.reason}</p>
+                                        <td className="px-8 py-8">
+                                            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl border-2 transition-all duration-500 ${status.bg} ${status.text} group-hover:scale-105 shadow-sm`}>
+                                                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${status.dot}`}></div>
+                                                <span className="text-[9px] font-bold uppercase tracking-[0.2em]">{ret.status}</span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${status.bg} ${status.text}`}>
-                                                {status.icon}
-                                                {ret.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-8 py-8 text-right pr-8">
                                             <button
                                                 onClick={() => {
                                                     setSelectedReturn(ret);
@@ -224,9 +215,10 @@ const ReturnManagement: React.FC = () => {
                                                     setAdminNotes(ret.adminNotes || '');
                                                     setIsStatusModalOpen(true);
                                                 }}
-                                                className="p-2 hover:bg-slate-900 hover:text-white text-slate-400 rounded-xl transition-all"
+                                                className="inline-flex items-center gap-3 bg-slate-50 hover:bg-slate-900 text-slate-400 hover:text-white px-6 py-3 rounded-2xl transition-all duration-500 group/btn border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100"
                                             >
-                                                <ArrowUpRight className="w-5 h-5" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest opacity-0 group-hover/btn:opacity-100 transition-all translate-x-4 group-hover/btn:translate-x-0">Edit Status</span>
+                                                <ArrowUpRight className="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>
@@ -238,62 +230,126 @@ const ReturnManagement: React.FC = () => {
             </div>
 
             {/* Edit Status Modal */}
+            {/* Redesigned Edit Status Modal */}
             {isStatusModalOpen && selectedReturn && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-                        <div className="p-10 border-b border-gray-50 flex items-center justify-between">
-                            <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Update Return</h2>
-                            <button onClick={() => setIsStatusModalOpen(false)} className="p-3 hover:bg-gray-50 rounded-2xl transition-all">
-                                <X className="w-6 h-6 text-gray-400" />
+                <div className="fixed inset-0 bg-slate-600/50 z-[200] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in duration-300">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-900 uppercase tracking-tight">Return Details</h2>
+                                <p className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-widest mt-1">ID: RET-{selectedReturn._id.slice(-8).toUpperCase()}</p>
+                            </div>
+                            <button onClick={() => setIsStatusModalOpen(false)} className="p-2 hover:bg-slate-50 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-slate-400" />
                             </button>
                         </div>
-                        <div className="p-10 space-y-8">
-                            {/* Summary */}
-                            <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-3xl">
-                                <div className="w-14 h-14 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-indigo-500 shadow-sm">
-                                    <Package className="w-8 h-8" />
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            {/* Simple Info Grid */}
+                            <div className="grid grid-cols-2 gap-6 text-sm">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Customer</label>
+                                    <p className="font-bold text-slate-900">{selectedReturn.user?.name}</p>
+                                    <p className="text-xs text-slate-500">{selectedReturn.user?.email}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Status</p>
-                                    <p className="text-lg font-black text-slate-900">{selectedReturn.status}</p>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Order Info</label>
+                                    <p className="font-mono font-bold text-indigo-600">ORD-{selectedReturn.order?._id?.slice(-8).toUpperCase()}</p>
+                                    <p className="text-xs text-slate-500">${selectedReturn.order?.totalPrice?.toFixed(2)} Total</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Expected Refund</label>
+                                    <p className="text-lg font-bold text-emerald-600">${selectedReturn.totalRefundAmount?.toFixed(2)}</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Current Status</label>
+                                    <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest mt-1 border ${getStatusStyles(selectedReturn.status).bg} ${getStatusStyles(selectedReturn.status).text}`}>
+                                        {selectedReturn.status}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Status Protocol</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {['Processing', 'Approved', 'Returned', 'Refunded', 'Rejected'].map((status) => (
-                                        <button
-                                            key={status}
-                                            onClick={() => setNewStatus(status)}
-                                            className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all text-center border-2 ${newStatus === status
-                                                ? 'bg-slate-900 text-white border-slate-900 shadow-xl'
-                                                : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
-                                                }`}
-                                        >
-                                            {status}
-                                        </button>
+                            <div className="border-t border-slate-50 pt-6">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Reason for Return</label>
+                                <p className="text-sm font-medium text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                    {selectedReturn.reason}
+                                </p>
+                            </div>
+
+                            {/* Items Section */}
+                            <div className="border-t border-slate-50 pt-6">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Returned Items ({selectedReturn.items?.length || 0})</label>
+                                <div className="space-y-2">
+                                    {selectedReturn.items?.map((item, idx) => (
+                                        <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-50 flex-shrink-0">
+                                                <img
+                                                    src={item.product?.images?.[0]?.url || item.product?.image || '/placeholder.png'}
+                                                    alt={item.product?.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] font-bold text-slate-900 truncate uppercase">{item.product?.name}</p>
+                                                <p className="text-[9px] text-slate-400 font-bold">Qty: {item.quantity} • ${item.price?.toFixed(2)}</p>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Resolution Inscription</label>
-                                <textarea
-                                    value={adminNotes}
-                                    onChange={(e) => setAdminNotes(e.target.value)}
-                                    placeholder="Add notes about this return..."
-                                    rows={4}
-                                    className="w-full p-5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner resize-none"
-                                />
-                            </div>
+                            <div className="border-t border-slate-50 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Update Status</label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {['Processing', 'Approved', 'Returned', 'Refunded', 'Rejected'].map((status) => {
+                                            const isActive = newStatus === status;
+                                            return (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => setNewStatus(status)}
+                                                    className={`px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all border ${isActive
+                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+                                                        : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                                                        }`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
 
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Admin Notes</label>
+                                    <textarea
+                                        value={adminNotes}
+                                        onChange={(e) => setAdminNotes(e.target.value)}
+                                        placeholder="Add notes..."
+                                        rows={2}
+                                        className="w-full p-3 bg-white border border-slate-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t border-slate-100 flex items-center justify-end gap-4">
+                            <button
+                                onClick={() => setIsStatusModalOpen(false)}
+                                className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors"
+                            >
+                                Cancel
+                            </button>
                             <button
                                 onClick={handleUpdateStatus}
                                 disabled={updateLoading}
-                                className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all disabled:opacity-50"
+                                className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center space-x-2 hover:bg-slate-900 transition-all disabled:opacity-50"
                             >
-                                {updateLoading ? 'Transmitting Updates...' : 'Execute Status Update'}
+                                {updateLoading ? <RefreshCcw className="w-3 h-3 animate-spin" /> : null}
+                                <span>{updateLoading ? 'Saving...' : 'Save Changes'}</span>
                             </button>
                         </div>
                     </div>

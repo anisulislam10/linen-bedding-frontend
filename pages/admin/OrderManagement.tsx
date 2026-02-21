@@ -82,7 +82,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                             <ShoppingBag className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                                 Order Details
                             </h2>
                             <p className="text-xs font-mono text-indigo-500 font-bold">
@@ -91,7 +91,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg ${status.bg} ${status.color}`}>
+                        <span className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg ${status.bg} ${status.color}`}>
                             {status.icon}
                             {order.status}
                         </span>
@@ -113,7 +113,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                         <div className="bg-slate-50 rounded-2xl p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <User className="w-4 h-4 text-indigo-500" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Info</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer Info</span>
                             </div>
                             <div className="space-y-3">
                                 {/* Name */}
@@ -122,7 +122,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                         <User className="w-3.5 h-3.5 text-indigo-500" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Full Name</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Full Name</p>
                                         <p className="font-bold text-slate-800 text-sm">{user?.name || 'Guest'}</p>
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                         <Mail className="w-3.5 h-3.5 text-indigo-500" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Email</p>
                                         <p className="text-sm text-slate-700 font-semibold break-all">{user?.email || 'N/A'}</p>
                                     </div>
                                 </div>
@@ -142,7 +142,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                         <Phone className="w-3.5 h-3.5 text-indigo-500" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phone</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Phone</p>
                                         <p className="text-sm text-slate-700 font-semibold">
                                             {user?.phone || <span className="text-slate-400 font-normal italic text-xs">Not provided</span>}
                                         </p>
@@ -150,7 +150,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                 </div>
                                 {/* Role badge */}
                                 {user?.role && (
-                                    <span className="inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-md">
+                                    <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-md">
                                         {user.role}
                                     </span>
                                 )}
@@ -161,7 +161,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                         <div className="bg-slate-50 rounded-2xl p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <Calendar className="w-4 h-4 text-indigo-500" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Timeline</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Timeline</span>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between text-xs">
@@ -200,7 +200,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                     <div className="bg-slate-50 rounded-2xl p-5">
                         <div className="flex items-center gap-2 mb-4">
                             <MapPin className="w-4 h-4 text-indigo-500" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Shipping Address</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shipping Address</span>
                         </div>
                         {typeof order.shippingAddress === 'string' ? (
                             <p className="text-sm text-slate-700 font-medium">{order.shippingAddress}</p>
@@ -223,7 +223,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                     <div className="bg-slate-50 rounded-2xl p-5">
                         <div className="flex items-center gap-2 mb-4">
                             <Package className="w-4 h-4 text-indigo-500" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                 Order Items ({order.items.length})
                             </span>
                         </div>
@@ -247,7 +247,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                             <p className="text-xs text-slate-400">Qty: {item.quantity}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-black text-slate-900 text-sm">${(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-bold text-slate-900 text-sm">${(item.price * item.quantity).toFixed(2)}</p>
                                             <p className="text-[10px] text-slate-400">${item.price.toFixed(2)} each</p>
                                         </div>
                                     </div>
@@ -262,14 +262,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                         <div className="bg-slate-50 rounded-2xl p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <CreditCard className="w-4 h-4 text-indigo-500" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Payment</span>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-xs font-black uppercase tracking-widest px-2 py-1 rounded-lg ${order.paymentMethod === 'Stripe' ? 'bg-purple-100 text-purple-600' : 'bg-orange-100 text-orange-600'}`}>
+                                    <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${order.paymentMethod === 'Stripe' ? 'bg-purple-100 text-purple-600' : 'bg-orange-100 text-orange-600'}`}>
                                         {order.paymentMethod}
                                     </span>
-                                    <span className={`text-xs font-black uppercase tracking-widest px-2 py-1 rounded-lg ${order.isPaid ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}`}>
+                                    <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${order.isPaid ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}`}>
                                         {order.isPaid ? '✓ Paid' : '✗ Unpaid'}
                                     </span>
                                 </div>
@@ -288,7 +288,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                         <div className="bg-slate-50 rounded-2xl p-5">
                             <div className="flex items-center gap-2 mb-4">
                                 <ShoppingBag className="w-4 h-4 text-indigo-500" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Price Breakdown</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Price Breakdown</span>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between text-xs">
@@ -304,8 +304,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                     <span className="font-bold text-slate-700">${order.taxPrice?.toFixed(2) ?? '—'}</span>
                                 </div>
                                 <div className="border-t border-slate-200 pt-2 flex justify-between text-sm">
-                                    <span className="font-black text-slate-900">Total</span>
-                                    <span className="font-black text-indigo-600">${order.totalPrice.toFixed(2)}</span>
+                                    <span className="font-bold text-slate-900">Total</span>
+                                    <span className="font-bold text-indigo-600">${order.totalPrice.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -351,7 +351,7 @@ const OrderManagement: React.FC = () => {
             setOrders(data);
             setFilteredOrders(data);
         } catch (err: any) {
-            setError(err.message || 'Failed to load order ledger');
+            setError(err.message || 'Failed to load orders');
         } finally {
             setLoading(false);
         }
@@ -398,8 +398,8 @@ const OrderManagement: React.FC = () => {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Logistic Registry</h1>
-                    <p className="text-slate-400 text-sm font-medium">Monitor and facilitate global deliveries.</p>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase">Order Management</h1>
+                    <p className="text-slate-400 text-sm font-medium">Manage and track all customer orders.</p>
                 </div>
             </div>
 
@@ -411,7 +411,7 @@ const OrderManagement: React.FC = () => {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Trace order by ID or User..."
+                            placeholder="Search by Order ID or Customer..."
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
                         />
                     </div>
@@ -421,12 +421,12 @@ const OrderManagement: React.FC = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tracing ID</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Timestamp</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Consignee</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Flow Status</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order ID</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -434,7 +434,7 @@ const OrderManagement: React.FC = () => {
                                 const user = o.user as UserType;
                                 return (
                                     <tr key={o._id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-4 font-mono text-[10px] text-indigo-600 font-black">
+                                        <td className="px-8 py-4 font-mono text-[10px] text-indigo-600 font-bold">
                                             #{o._id.slice(-8).toUpperCase()}
                                         </td>
                                         <td className="px-8 py-4">
@@ -449,14 +449,14 @@ const OrderManagement: React.FC = () => {
                                                 <span className="text-[10px] text-slate-400">{user?.email || 'N/A'}</span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-4 font-black text-slate-900 text-sm">
+                                        <td className="px-8 py-4 font-bold text-slate-900 text-sm">
                                             ${o.totalPrice.toFixed(2)}
                                         </td>
                                         <td className="px-8 py-4">
                                             <select
                                                 value={o.status}
                                                 onChange={(e) => handleStatusUpdate(o._id, e.target.value)}
-                                                className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border-none focus:ring-2 focus:ring-indigo-500 cursor-pointer ${o.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : o.status === 'Cancelled' ? 'bg-red-50 text-red-500' : o.status === 'Shipped' ? 'bg-purple-50 text-purple-600' : o.status === 'Processing' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}
+                                                className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg border-none focus:ring-2 focus:ring-indigo-500 cursor-pointer ${o.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : o.status === 'Cancelled' ? 'bg-red-50 text-red-500' : o.status === 'Shipped' ? 'bg-purple-50 text-purple-600' : o.status === 'Processing' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}
                                             >
                                                 <option value="Pending">Pending</option>
                                                 <option value="Processing">Processing</option>

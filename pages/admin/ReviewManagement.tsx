@@ -75,7 +75,7 @@ const ReviewManagement: React.FC = () => {
                         <thead>
                             <tr className="bg-slate-50/50">
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Patron</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Artifact</th>
+                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Product</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Commentary</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
@@ -109,7 +109,7 @@ const ReviewManagement: React.FC = () => {
                                                 )}
                                             </div>
                                             <span className="font-bold text-slate-700 text-xs line-clamp-1 max-w-[150px]">
-                                                {r.product?.name || <span className="text-slate-300 italic">Deleted Artifact</span>}
+                                                {r.product?.name || <span className="text-slate-300 italic">Deleted Product</span>}
                                             </span>
                                         </div>
                                     </td>

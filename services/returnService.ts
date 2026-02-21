@@ -1,11 +1,19 @@
 import api from './api';
 import { ApiResponse } from '../types';
 
+export interface ReturnItem {
+    product: any;
+    quantity: number;
+    price: number;
+}
+
 export interface ReturnRequest {
     _id: string;
     order: any;
     user: any;
     reason: string;
+    items: ReturnItem[];
+    totalRefundAmount: number;
     status: 'Processing' | 'Approved' | 'Returned' | 'Refunded' | 'Rejected';
     adminNotes?: string;
     createdAt: string;
@@ -13,8 +21,8 @@ export interface ReturnRequest {
 
 export const returnService = {
     // Create return request
-    createReturnRequest: async (orderId: string, reason: string): Promise<ReturnRequest> => {
-        const response = await api.post<ApiResponse<{ returnRequest: ReturnRequest }>>('/returns', { orderId, reason });
+    createReturnRequest: async (orderId: string, reason: string, items?: { product: string, quantity: number }[]): Promise<ReturnRequest> => {
+        const response = await api.post<ApiResponse<{ returnRequest: ReturnRequest }>>('/returns', { orderId, reason, items });
         return response.data.data.returnRequest;
     },
 

@@ -47,7 +47,7 @@ const WishlistManagement: React.FC = () => {
         <div className="p-8">
             <div className="mb-12">
                 <h1 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Wishlist Analytics</h1>
-                <p className="text-gray-500 font-medium">Monitor the most desired artifacts in the system.</p>
+                <p className="text-gray-500 font-medium">Monitor the most desired products in the system.</p>
             </div>
 
             {stats.length === 0 ? (
