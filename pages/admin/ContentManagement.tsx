@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Layout, Info, ShieldCheck, ShoppingCart, Share2, Type, Clock, AlertTriangle, CreditCard } from 'lucide-react';
+import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, ChevronUp, ChevronDown, Layout, Info, ShieldCheck, ShoppingCart, Share2, Type, Clock, AlertTriangle, CreditCard, Facebook, Twitter, Instagram } from 'lucide-react';
 import { contentService } from '../../services/contentService';
 import { productService } from '../../services/productService';
 import { paymentService } from '../../services/paymentService';
@@ -95,6 +95,7 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
                 facebook: '',
                 twitter: '',
                 instagram: '',
+                tiktok: '',
                 github: ''
             },
             newsletterText: '',
@@ -166,6 +167,7 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
                             facebook: content.footer?.socialLinks?.facebook || '',
                             twitter: content.footer?.socialLinks?.twitter || '',
                             instagram: content.footer?.socialLinks?.instagram || '',
+                            tiktok: content.footer?.socialLinks?.tiktok || '',
                             github: content.footer?.socialLinks?.github || ''
                         },
                         newsletterText: content.footer?.newsletterText || '',
@@ -697,15 +699,48 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
                                                 <Share2 className="w-5 h-5 text-indigo-600" />
                                                 <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-indigo-900">Social Links</h4>
                                             </div>
-                                            {Object.entries(formData.footer.socialLinks).map(([key, value]) => (
-                                                <div key={key} className="space-y-2">
-                                                    <label className="text-[8px] font-bold text-indigo-400 uppercase tracking-[0.2em] ml-1">{key} Link</label>
-                                                    <div className="flex bg-white rounded-2xl overflow-hidden shadow-sm border border-indigo-100/50">
-                                                        <div className="p-4 bg-indigo-50 text-indigo-600 border-r border-indigo-100"><Share2 className="w-4 h-4" /></div>
-                                                        <input type="text" className="flex-1 p-4 border-none text-[11px] font-bold text-slate-700" value={value} onChange={e => setFormData({ ...formData, footer: { ...formData.footer, socialLinks: { ...formData.footer.socialLinks, [key]: e.target.value } } })} />
+                                            {Object.entries(formData.footer.socialLinks).map(([key, value]) => {
+                                                const icons: Record<string, React.ReactNode> = {
+                                                    facebook: <Facebook className="w-4 h-4" />,
+                                                    twitter: <Twitter className="w-4 h-4" />,
+                                                    instagram: <Instagram className="w-4 h-4" />,
+                                                    tiktok: (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" />
+                                                        </svg>
+                                                    ),
+                                                    github: <Share2 className="w-4 h-4" />
+                                                };
+                                                const platformLabels: Record<string, string> = {
+                                                    facebook: 'Facebook',
+                                                    twitter: 'Twitter / X',
+                                                    instagram: 'Instagram',
+                                                    tiktok: 'TikTok',
+                                                    github: 'GitHub'
+                                                };
+                                                const placeholders: Record<string, string> = {
+                                                    facebook: 'https://facebook.com/yourpage',
+                                                    twitter: 'https://twitter.com/yourhandle',
+                                                    instagram: 'https://instagram.com/yourhandle',
+                                                    tiktok: 'https://tiktok.com/@yourhandle',
+                                                    github: 'https://github.com/yourrepo'
+                                                };
+                                                return (
+                                                    <div key={key} className="space-y-2">
+                                                        <label className="text-[8px] font-bold text-indigo-400 uppercase tracking-[0.2em] ml-1">{platformLabels[key] || key}</label>
+                                                        <div className="flex bg-white rounded-2xl overflow-hidden shadow-sm border border-indigo-100/50">
+                                                            <div className="p-4 bg-indigo-50 text-indigo-600 border-r border-indigo-100">{icons[key] || <Share2 className="w-4 h-4" />}</div>
+                                                            <input
+                                                                type="text"
+                                                                placeholder={placeholders[key] || 'https://'}
+                                                                className="flex-1 p-4 border-none text-[11px] font-bold text-slate-700 placeholder:font-normal placeholder:text-slate-300"
+                                                                value={value}
+                                                                onChange={e => setFormData({ ...formData, footer: { ...formData.footer, socialLinks: { ...formData.footer.socialLinks, [key]: e.target.value } } })}
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>

@@ -9,19 +9,20 @@ import {
     ChevronRight,
     ArrowLeft,
     Monitor,
-    Zap
+    Zap,
+    LayoutTemplate
 } from 'lucide-react';
 import PaymentSettings from './PaymentSettings';
 import ContentManagement from './ContentManagement';
 
 const SettingsOverview: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'general' | 'payments' | 'flash' | 'legal'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'payments' | 'flash' | 'footer'>('general');
 
     const tabs = [
         { id: 'general', label: 'General Settings', icon: Globe, description: 'Site identity, SEO keywords, and global meta-data.' },
         { id: 'payments', label: 'Payment Methods', icon: CreditCard, description: 'Payment gateways, Stripe keys, and COD management.' },
         { id: 'flash', label: 'Marketing & Events', icon: Zap, description: 'Flash sale coordination and event triggers.' },
-        { id: 'legal', label: 'Legal & Compliance', icon: ShieldCheck, description: 'Privacy policies and terms of service management.' }
+        { id: 'footer', label: 'Footer Management', icon: LayoutTemplate, description: 'Footer text, social media links, and copyright settings.' }
     ] as const;
 
     return (
@@ -92,10 +93,10 @@ const SettingsOverview: React.FC = () => {
                                 </div>
                             </div>
                         )}
-                        {activeTab === 'legal' && (
+                        {activeTab === 'footer' && (
                             <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
                                 <div className="p-10">
-                                    <ContentManagement overrideTab="legal" isEmbedded={true} />
+                                    <ContentManagement overrideTab="footer" isEmbedded={true} />
                                 </div>
                             </div>
                         )}
