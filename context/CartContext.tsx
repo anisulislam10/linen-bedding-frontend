@@ -104,7 +104,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 : item
             );
           }
-          return [...prev, { product, quantity, price: product.price }];
+          const discount = product.discount || 0;
+          const activePrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
+          return [...prev, { product, quantity, price: activePrice }];
         });
       }
     } catch (err: any) {
@@ -189,8 +191,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Calculate totals
   const subtotal = cart.reduce((acc, item) => {
     if (!item.product) return acc;
-    const price = item.product.price || item.price || 0;
-    return acc + price * item.quantity;
+    const basePrice = item.product.price || item.price || 0;
+    const discount = item.product.discount || 0;
+    const activePrice = discount > 0 ? basePrice * (1 - discount / 100) : basePrice;
+    return acc + activePrice * item.quantity;
   }, 0);
   const totalItems = cart.reduce((acc, item) => acc + (item.product ? item.quantity : 0), 0);
   const tax = subtotal * 0.1;

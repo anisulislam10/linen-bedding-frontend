@@ -23,6 +23,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
         stock: '',
         brand: '',
         isHero: false,
+        discount: '0',
         specifications: [] as { key: string; value: string }[]
     });
 
@@ -39,6 +40,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                 stock: product.stock.toString(),
                 brand: product.brand || '',
                 isHero: product.isHero || false,
+                discount: (product.discount || 0).toString(),
                 specifications: product.specifications || []
             });
             if (product.images) {
@@ -205,6 +207,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave })
                                     className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
                                     value={formData.stock}
                                     onChange={e => setFormData({ ...formData, stock: e.target.value })}
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Discount (%)"
+                                    min="0"
+                                    max="100"
+                                    className="w-full p-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold text-rose-600"
+                                    value={formData.discount}
+                                    onChange={e => setFormData({ ...formData, discount: e.target.value })}
                                 />
                             </div>
                             <select

@@ -21,6 +21,9 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     return false;
   });
 
+  const hasDiscount = product.discount && product.discount > 0;
+  const salePrice = hasDiscount ? product.price * (1 - product.discount! / 100) : product.price;
+
   return (
     <motion.div
       whileHover={{ y: -8 }}
@@ -30,7 +33,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Stage */}
-      <Link to={`/products/${product.slug || product.id}`} className="relative aspect-[4/5] overflow-hidden bg-secondary/5 block">
+      <Link to={`/products/${product.slug || product.id}`} target="_blank" rel="noopener noreferrer" className="relative aspect-[4/5] overflow-hidden bg-secondary/5 block">
         <img
           src={product.image}
           alt={product.name}
@@ -44,12 +47,19 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           />
         )}
 
-        {/* Out of Stock Badge */}
-        {product.stock === 0 && (
-          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-100 z-10 shadow-sm">
-            <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest">Departed</span>
-          </div>
-        )}
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+          {product.stock === 0 && (
+            <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm">
+              <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest">Departed</span>
+            </div>
+          )}
+          {hasDiscount && (
+            <div className="bg-rose-600 px-3 py-1.5 rounded-lg shadow-lg">
+              <span className="text-[9px] font-black text-white uppercase tracking-widest">-{product.discount}% OFF</span>
+            </div>
+          )}
+        </div>
 
         {/* Wishlist Marker */}
         <button
@@ -96,7 +106,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       {/* Product Details Block */}
       <div className="flex flex-col flex-grow text-center p-6 space-y-3">
         <div className="space-y-1">
-          <Link to={`/products/${product.slug || product.id}`}>
+          <Link to={`/products/${product.slug || product.id}`} target="_blank" rel="noopener noreferrer">
             <h3 className="text-sm font-sans font-semibold text-primary/90 tracking-wide group-hover:text-sage transition-colors line-clamp-2 min-h-[40px] uppercase text-[11px] tracking-[0.05em]">
               {product.name}
             </h3>
@@ -108,9 +118,22 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           </div>
         </div>
 
-        <p className="text-base font-serif font-medium text-primary">
-          ${product.price.toFixed(2)}
-        </p>
+        <div className="flex flex-col items-center">
+          {hasDiscount ? (
+            <div className="flex items-center gap-3">
+              <span className="text-base font-serif font-medium text-rose-600">
+                ${salePrice.toFixed(2)}
+              </span>
+              <span className="text-xs font-sans text-gray-400 line-through decoration-rose-400/30">
+                ${product.price.toFixed(2)}
+              </span>
+            </div>
+          ) : (
+            <p className="text-base font-serif font-medium text-primary">
+              ${product.price.toFixed(2)}
+            </p>
+          )}
+        </div>
       </div>
     </motion.div>
   );

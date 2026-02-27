@@ -4,7 +4,7 @@ import {
     useStripe,
     useElements
 } from '@stripe/react-stripe-js';
-import { Lock, Loader2 } from 'lucide-react';
+import { Lock, Loader2, ShieldCheck } from 'lucide-react';
 
 interface StripePaymentFormProps {
     total: number;
@@ -65,53 +65,53 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-indigo-50/50 p-8 rounded-[2.5rem] border border-indigo-100">
-                <div className="flex justify-between items-center mb-8">
-                    <h4 className="font-bold text-gray-900 flex items-center space-x-2">
-                        <Lock className="h-5 w-5 text-indigo-600" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-gray-50/50 p-6 rounded-lg border border-gray-100">
+                <div className="flex justify-between items-center mb-6">
+                    <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2 uppercase tracking-tight">
+                        <Lock className="h-4 w-4 text-[#f85606]" />
                         <span>Secure Card Payment</span>
                     </h4>
                 </div>
 
-                <div className="p-4 bg-white border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                <div className="p-4 bg-white border border-gray-200 rounded focus-within:ring-1 focus-within:ring-[#f85606] transition-all">
                     <CardElement
                         options={{
                             style: {
                                 base: {
-                                    fontSize: '16px',
-                                    color: '#1a1a1a',
+                                    fontSize: '14px',
+                                    color: '#212121',
                                     '::placeholder': {
-                                        color: '#aab7c4',
+                                        color: '#cbd5e1',
                                     },
-                                    fontFamily: 'Inter, sans-serif',
+                                    fontFamily: 'system-ui, -apple-system, sans-serif',
                                 },
                                 invalid: {
-                                    color: '#ef4444',
+                                    color: '#f85606',
                                 },
                             },
                         }}
                     />
                 </div>
-                <p className="mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">
-                    Encrypted by Stripe
+                <p className="mt-4 text-[10px] text-gray-400 font-medium text-center italic">
+                    Payments are highly secured by Stripe Encrypted Protocols
                 </p>
             </div>
 
             <button
                 type="submit"
                 disabled={!stripe || isProcessing}
-                className="w-full bg-gray-900 text-white py-6 rounded-[2rem] font-black text-xl flex items-center justify-center space-x-4 hover:bg-black transition-all shadow-2xl disabled:opacity-70"
+                className="w-full bg-[#f85606] text-white py-4 rounded font-bold text-sm uppercase tracking-widest hover:bg-[#d04a05] transition-all shadow-lg shadow-orange-100 disabled:opacity-50 flex items-center justify-center gap-3 active:scale-[0.98]"
             >
                 {isProcessing ? (
-                    <>
-                        <Loader2 className="animate-spin h-6 w-6" />
-                        <span>Processing...</span>
-                    </>
+                    <div className="flex items-center gap-2">
+                        <Loader2 className="animate-spin h-4 w-4" />
+                        <span className="text-[10px]">Processing...</span>
+                    </div>
                 ) : (
                     <>
-                        <Lock className="h-6 w-6" />
-                        <span>Confirm & Pay ${total.toFixed(2)}</span>
+                        <ShieldCheck className="h-5 w-5" />
+                        <span>Confirm Payment — ${total.toFixed(2)}</span>
                     </>
                 )}
             </button>

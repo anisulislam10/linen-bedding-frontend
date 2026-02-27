@@ -28,6 +28,7 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'hero' | 'impact' | 'legal' | 'store' | 'flash' | 'footer'>('hero');
+    const [searchTerm, setSearchTerm] = useState('');
 
 
     // Legal Content States
@@ -85,6 +86,7 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
             endTime: '',
             title: 'Flash Artifacts',
             subtitle: 'Limited Availability',
+            discount: 0,
             products: [] as string[]
         },
         footer: {
@@ -325,41 +327,53 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
     return (
         <div className={`space-y-10 max-w-6xl mx-auto pb-20 ${!isEmbedded ? 'px-4 md:px-0' : ''}`}>
             {/* Header Area */}
-            {!isEmbedded && (
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div className={`flex flex-col md:flex-row justify-between items-start md:items-end gap-6 ${isEmbedded ? 'mb-8' : ''}`}>
+                {!isEmbedded ? (
                     <div>
                         <h1 className="text-4xl font-bold text-slate-900 tracking-tighter uppercase mb-2">Content Management</h1>
                         <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">Manage your website content and policies.</p>
                     </div>
+                ) : (
+                    <div className="flex items-center gap-3">
+                        <div className="h-6 w-1.5 bg-indigo-600 rounded-full"></div>
+                        <h3 className="text-lg font-bold text-slate-800 uppercase tracking-tight">
+                            {activeTab === 'flash' ? 'Flash Sale Settings' :
+                                activeTab === 'store' ? 'Store Configuration' :
+                                    activeTab === 'legal' ? 'Legal Policies' : 'Section Settings'}
+                        </h3>
+                    </div>
+                )}
+
+                <div className="flex-shrink-0">
                     {activeTab !== 'legal' ? (
                         <button
                             onClick={handleSubmit}
                             disabled={saving}
-                            className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all shadow-2xl shadow-indigo-100 disabled:opacity-50"
+                            className={`${isEmbedded ? 'px-6 py-3 text-[9px]' : 'px-10 py-5 text-[10px]'} bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest flex items-center gap-4 hover:bg-black transition-all shadow-2xl shadow-indigo-100 disabled:opacity-50`}
                         >
                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            <span>Save Page Changes</span>
+                            <span>Save {isEmbedded ? 'Settings' : 'Page Changes'}</span>
                         </button>
                     ) : (
                         <div className="flex gap-4">
                             <button
                                 onClick={() => handleLegalSubmit('privacy')}
                                 disabled={saving}
-                                className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                                className={`${isEmbedded ? 'px-5 py-3 text-[9px]' : 'px-8 py-4 text-[10px]'} bg-indigo-600 text-white rounded-xl font-bold uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50`}
                             >
                                 <ShieldCheck className="w-4 h-4" /> Save Privacy
                             </button>
                             <button
                                 onClick={() => handleLegalSubmit('terms')}
                                 disabled={saving}
-                                className="bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-black transition-all shadow-lg shadow-slate-100 disabled:opacity-50"
+                                className={`${isEmbedded ? 'px-5 py-3 text-[9px]' : 'px-8 py-4 text-[10px]'} bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest flex items-center gap-3 hover:bg-black transition-all shadow-lg shadow-slate-100 disabled:opacity-50`}
                             >
                                 <Layout className="w-4 h-4" /> Save Terms
                             </button>
                         </div>
                     )}
                 </div>
-            )}
+            </div>
 
             {/* Tab Navigation */}
             {!isEmbedded && (
@@ -597,11 +611,34 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
                                                 <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Subtitle</label>
                                                 <input type="text" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold" value={formData.flashSale.subtitle} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, subtitle: e.target.value } })} />
                                             </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Sale Percentage (%)</label>
+                                                <input type="number" className="w-full p-6 bg-slate-50 border-none rounded-2xl text-xs font-bold text-rose-600" placeholder="e.g. 20" value={formData.flashSale.discount} onChange={e => setFormData({ ...formData, flashSale: { ...formData.flashSale, discount: parseInt(e.target.value) || 0 } })} />
+                                            </div>
                                         </div>
                                         <div className="space-y-6">
-                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Featured Products</h4>
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto p-2 scrollbar-hide">
-                                                {allProducts.map(product => {
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ml-2">
+                                                <div>
+                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Featured Products</h4>
+                                                    <p className="text-[9px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Select at least 4 products to display in the sale section.</p>
+                                                </div>
+                                                <div className="relative w-full md:w-64">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search products..."
+                                                        className="w-full p-4 bg-slate-50 border-none rounded-xl text-[10px] font-bold uppercase tracking-widest focus:ring-1 ring-indigo-500"
+                                                        onChange={(e) => {
+                                                            const term = e.target.value.toLowerCase();
+                                                            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
+                                                            // We keep allProducts as the source of truth, but we'll use a local filter for display
+                                                            (e.target as any)._filtered = filtered;
+                                                            setSearchTerm(term);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto p-2 scrollbar-hide border border-slate-50 rounded-3xl">
+                                                {allProducts.filter(p => p.name.toLowerCase().includes(searchTerm)).map(product => {
                                                     const isSelected = formData.flashSale.products.includes(product._id);
                                                     return (
                                                         <button key={product._id} onClick={() => {
@@ -609,12 +646,19 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
                                                                 ? formData.flashSale.products.filter(id => id !== product._id)
                                                                 : [...formData.flashSale.products, product._id];
                                                             setFormData({ ...formData, flashSale: { ...formData.flashSale, products: newProducts } });
-                                                        }} className={`p-4 rounded-2xl text-left transition-all border ${isSelected ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 shadow-sm'}`}>
-                                                            <div className="aspect-square bg-slate-100 rounded-xl mb-3 overflow-hidden">
+                                                        }} className={`p-4 rounded-[2rem] text-left transition-all border-2 relative group-hover:scale-[1.02] ${isSelected ? 'bg-indigo-600 border-indigo-600 shadow-xl shadow-indigo-100' : 'bg-white border-slate-50 hover:border-slate-200 shadow-sm'}`}>
+                                                            <div className="aspect-square bg-slate-100 rounded-2xl mb-4 overflow-hidden relative">
                                                                 <img src={product.images[0]?.url} className="w-full h-full object-cover" />
+                                                                {isSelected && (
+                                                                    <div className="absolute inset-0 bg-indigo-600/20 backdrop-blur-[2px] flex items-center justify-center">
+                                                                        <div className="bg-white p-2 rounded-full shadow-lg">
+                                                                            <Save className="w-3 h-3 text-indigo-600" />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <p className="text-[9px] font-black uppercase tracking-tight truncate mb-1">{product.name}</p>
-                                                            <p className="text-[8px] font-bold text-slate-400">${product.price}</p>
+                                                            <p className={`text-[9px] font-black uppercase tracking-tight truncate mb-1 ${isSelected ? 'text-indigo-50' : 'text-slate-900'}`}>{product.name}</p>
+                                                            <p className={`text-[8px] font-bold ${isSelected ? 'text-indigo-200' : 'text-slate-400'}`}>${product.price}</p>
                                                         </button>
                                                     );
                                                 })}

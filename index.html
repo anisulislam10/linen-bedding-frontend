@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Avenly by Huma | Sustainable Luxury Bedding</title>
   <!-- Favicon -->
-  <link rel="icon" href="https://res.cloudinary.com/dapefjneu/image/upload/v1769443173/content/a1l4arewmufu2uqif3hc.png" type="image/x-icon">
-  
+  <link rel="icon" href="/favico.png" type="image/png">
+
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <script>
     tailwind.config = {
       theme: {
@@ -36,6 +37,7 @@
       --bg: #F5F5F1;
       --text: #2C3E50;
     }
+
     body {
       font-family: Arial, Helvetica, sans-serif;
       background-color: var(--bg);
@@ -43,8 +45,13 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
-    
-    h1, h2, h3, h4, h5, h6 {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       font-family: Arial, Helvetica, sans-serif;
     }
 
@@ -52,23 +59,35 @@
     .fade-in {
       animation: fadeIn 0.8s ease-in-out forwards;
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Subtle Hover States */
     .hover-lift {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
     .hover-lift:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
-    
-    ::selection { background: #8F9779; color: #fff; }
+
+    ::selection {
+      background: #8F9779;
+      color: #fff;
+    }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
@@ -79,10 +98,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
+
 <body>
   <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

@@ -227,7 +227,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
             className="text-2xl md:text-3xl font-serif font-bold tracking-tight absolute left-1/2 -translate-x-1/2 text-primary flex items-center justify-center"
           >
             {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.siteName} className="h-10 w-auto object-contain" />
+              <img src={siteSettings.logoUrl} alt={siteSettings.siteName} className="h-20 w-auto object-contain" />
             ) : (
               <span>{siteSettings.siteName}</span>
             )}

@@ -87,7 +87,7 @@ const ProductDetail: React.FC = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 md:mt-14 pt-14 md:pt-14">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-10 pt-4 md:pt-6">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">
         <Link to="/" className="hover:text-gray-900 transition-colors">Home</Link>
@@ -142,7 +142,19 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-4xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</p>
+          <div className="flex flex-col mb-4">
+            {product.discount && product.discount > 0 ? (
+              <div className="flex items-center gap-4">
+                <p className="text-4xl font-bold text-rose-600">${(product.price * (1 - product.discount / 100)).toFixed(2)}</p>
+                <div className="flex flex-col">
+                  <p className="text-lg font-bold text-gray-400 line-through decoration-rose-400/30">${product.price.toFixed(2)}</p>
+                  <span className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em]">-{product.discount}% OFF</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-4xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
+            )}
+          </div>
 
           {/* Stock Availability Indicator */}
           <div className="mb-8">
@@ -218,7 +230,7 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* ... (Shipping icons remain unchanged) ... */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10">
             <div className="flex items-start space-x-3">
               <Truck className="h-5 w-5 text-indigo-600 flex-shrink-0" />
               <div>
@@ -240,12 +252,12 @@ const ProductDetail: React.FC = () => {
                 <p className="text-xs text-gray-400 mt-1">30 days period</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-t border-gray-100 pt-12 sm:pt-16 md:pt-20">
+      <div className="border-t border-gray-100 sm:pt-16 md:pt-2">
         <div className="flex flex-wrap gap-4 sm:gap-6 md:space-x-8 mb-6 sm:mb-8 md:mb-10 border-b border-gray-100 pb-2">
           {['Description', 'Specifications', 'Reviews'].map(tab => (
             <button
@@ -261,7 +273,7 @@ const ProductDetail: React.FC = () => {
           ))}
         </div>
 
-        <div className="max-w-4xl leading-relaxed text-gray-500 text-sm sm:text-base md:text-lg">
+        <div className="max-w-4xl leading-relaxed text-gray-500 text-sm sm:text-base md:text-lg mb-10">
           {activeTab === 'description' && (
             <div className="space-y-6">
               <p>{product.description}</p>

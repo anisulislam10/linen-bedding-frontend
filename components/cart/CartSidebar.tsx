@@ -43,7 +43,9 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                 if (!item.product) return null;
                 const itemId = item._id || item.product._id || (item.product as any).id;
                 const productName = item.product.name;
-                const productPrice = item.product.price || item.price;
+                const basePrice = item.product.price || item.price;
+                const discount = item.product.discount || 0;
+                const activePrice = discount > 0 ? basePrice * (1 - discount / 100) : basePrice;
                 const productImage = item.product.images?.[0]?.url || item.product.image;
 
                 return (
@@ -54,7 +56,16 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
                         <h4 className="font-bold text-gray-900 line-clamp-1 uppercase text-xs tracking-tight">{productName}</h4>
-                        <p className="text-sm text-gray-500">${productPrice.toFixed(2)}</p>
+                        <div className="flex items-center gap-2">
+                          <p className={`text-sm font-bold ${discount > 0 ? 'text-rose-600' : 'text-gray-900'}`}>
+                            ${activePrice.toFixed(2)}
+                          </p>
+                          {discount > 0 && (
+                            <p className="text-[10px] text-gray-400 line-through decoration-rose-400/20">
+                              ${basePrice.toFixed(2)}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center border border-gray-100 rounded-lg">

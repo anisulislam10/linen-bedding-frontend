@@ -91,7 +91,6 @@ const Home: React.FC = () => {
       <Hero cmsData={cmsContent} />
 
       {/* 2.5 Flash Sale Section */}
-      <FlashSale />
 
       {/* 3. Shop by Category */}
       <motion.section
@@ -166,6 +165,9 @@ const Home: React.FC = () => {
           </div>
         </div>
       </motion.section>
+
+
+      <FlashSale cmsData={cmsContent?.flashSale} />
 
       {/* 5. Our Impact / Story - Professional Editorial Redesign */}
       <section className="py-40 px-6 bg-[#FAF9F6] overflow-hidden">
@@ -323,14 +325,14 @@ const Home: React.FC = () => {
         viewport={{ once: true }}
         className="py-24 px-6 text-center bg-sand"
       >
-        <div className="max-w-xl mx-auto">
+        {/* <div className="max-w-xl mx-auto">
           <h2 className="text-3xl font-serif font-medium mb-4">Join the Collective</h2>
           <p className="text-primary/60 mb-8">Sign up for early access to new collections and sustainable living tips.</p>
           <div className="flex gap-2">
             <input type="email" placeholder="Your email address" className="flex-1 bg-white border border-transparent px-4 py-3 text-sm focus:border-sage outline-none" />
             <button className="bg-primary text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-sage transition-colors">Sign Up</button>
           </div>
-        </div>
+        </div> */}
       </motion.section>
     </div>
   );

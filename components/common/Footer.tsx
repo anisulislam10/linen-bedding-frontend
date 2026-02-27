@@ -31,7 +31,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-primary text-sand pt-16 pb-8 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
           {/* Brand */}
           <div className="space-y-6">
             <Link to="/" className="text-2xl font-serif font-bold tracking-tight">
@@ -89,24 +89,6 @@ const Footer: React.FC = () => {
               <li><Link to="/contact" className="text-sand/70 hover:text-white text-sm font-sans transition-colors">Contact Us</Link></li>
               <li><Link to="/about" className="text-sand/70 hover:text-white text-sm font-sans transition-colors">About Us</Link></li>
             </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h4 className="text-sm font-serif font-bold uppercase tracking-wider mb-6 text-sage">Newsletter</h4>
-            <p className="text-sand/70 text-sm font-sans mb-6">
-              {footer?.newsletterText || 'Join our community for eco-conscious living tips and exclusive offers.'}
-            </p>
-            <form className="flex flex-col gap-3">
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="w-full bg-white/5 border border-white/10 rounded-sm py-3 px-4 text-sm text-sand placeholder:text-sand/30 focus:border-sage outline-none transition-colors"
-              />
-              <button className="bg-sage text-white py-3 px-4 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-stone hover:text-primary transition-all">
-                Subscribe
-              </button>
-            </form>
           </div>
         </div>
 
