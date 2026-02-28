@@ -16,6 +16,7 @@ const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchUsers();
@@ -32,6 +33,12 @@ const UserManagement: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const filteredUsers = users.filter(user =>
+        (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user._id || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     if (loading) {
         return (
@@ -56,6 +63,8 @@ const UserManagement: React.FC = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search by Email or Name..."
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
                         />
@@ -74,60 +83,68 @@ const UserManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {users.map((u) => (
-                                <tr key={u._id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-12 h-12 bg-slate-100 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-200">
-                                                {u.avatar ? (
-                                                    <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <UserIcon className="w-5 h-5 text-slate-400" />
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-slate-900 text-sm">{u.name}</span>
-                                                <div className="flex items-center space-x-1.5 text-slate-400">
-                                                    <Mail className="w-3 h-3" />
-                                                    <span className="text-[10px] font-medium">{u.email}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center space-x-2">
-                                            <Shield className={`w-4 h-4 ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-400'}`} />
-                                            <span className={`text-[10px] font-bold uppercase tracking-widest ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-500'}`}>
-                                                {u.role}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center space-x-2">
-                                            {u.isVerified ? (
-                                                <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                            ) : (
-                                                <XCircle className="w-4 h-4 text-rose-500" />
-                                            )}
-                                            <span className="text-xs font-bold text-slate-600">
-                                                {u.isVerified ? 'Verified' : 'Pending'}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <span className="text-xs font-bold text-slate-500">
-                                            {new Date(u.createdAt).toLocaleDateString()}
-                                        </span>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center justify-end">
-                                            <button className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:underline px-4 py-2">
-                                                Edit Permissions
-                                            </button>
-                                        </div>
+                            {filteredUsers.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-8 py-20 text-center">
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No users match your criteria.</p>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredUsers.map((u) => (
+                                    <tr key={u._id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center space-x-4">
+                                                <div className="w-12 h-12 bg-slate-100 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-200">
+                                                    {u.avatar ? (
+                                                        <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <UserIcon className="w-5 h-5 text-slate-400" />
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-slate-900 text-sm">{u.name}</span>
+                                                    <div className="flex items-center space-x-1.5 text-slate-400">
+                                                        <Mail className="w-3 h-3" />
+                                                        <span className="text-[10px] font-medium">{u.email}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center space-x-2">
+                                                <Shield className={`w-4 h-4 ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                                <span className={`text-[10px] font-bold uppercase tracking-widest ${u.role === 'admin' ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                                    {u.role}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center space-x-2">
+                                                {u.isVerified ? (
+                                                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                                ) : (
+                                                    <XCircle className="w-4 h-4 text-rose-500" />
+                                                )}
+                                                <span className="text-xs font-bold text-slate-600">
+                                                    {u.isVerified ? 'Verified' : 'Pending'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <span className="text-xs font-bold text-slate-500">
+                                                {new Date(u.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center justify-end">
+                                                <button className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:underline px-4 py-2">
+                                                    Edit Permissions
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

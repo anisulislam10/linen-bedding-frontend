@@ -64,7 +64,7 @@ const ProductListing: React.FC = () => {
   }
 
   return (
-    <div className="bg-white min-h-screen pt-24 sm:pt-28 md:pt-32">
+    <div className="bg-white min-h-screen">
       <main className="p-6 lg:p-12">
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-24">
           <div>

@@ -16,10 +16,11 @@ import PaymentSettings from './PaymentSettings';
 import ContentManagement from './ContentManagement';
 
 const SettingsOverview: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'general' | 'payments' | 'flash' | 'footer'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'payments' | 'flash' | 'footer' | 'hero'>('general');
 
     const tabs = [
         { id: 'general', label: 'General Settings', icon: Globe, description: 'Site identity, SEO keywords, and global meta-data.' },
+        { id: 'hero', label: 'Hero Content', icon: Layout, description: 'Manage home page slides, headings, and images.' },
         { id: 'payments', label: 'Payment Methods', icon: CreditCard, description: 'Payment gateways, Stripe keys, and COD management.' },
         { id: 'flash', label: 'Flash Sales', icon: Zap, description: 'Flash sale coordination and event triggers.' },
         { id: 'footer', label: 'Footer Management', icon: LayoutTemplate, description: 'Footer text, social media links, and copyright settings.' }
@@ -76,6 +77,13 @@ const SettingsOverview: React.FC = () => {
                             <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
                                 <div className="p-10">
                                     <ContentManagement overrideTab="store" isEmbedded={true} />
+                                </div>
+                            </div>
+                        )}
+                        {activeTab === 'hero' && (
+                            <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+                                <div className="p-10">
+                                    <ContentManagement overrideTab="hero" isEmbedded={true} />
                                 </div>
                             </div>
                         )}

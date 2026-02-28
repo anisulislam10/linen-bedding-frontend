@@ -517,9 +517,53 @@ const ContentManagement: React.FC<ContentManagementProps> = ({ overrideTab, isEm
                         {activeTab === 'store' && (
                             <div className="space-y-12">
                                 <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100/50">
-                                    <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Storefront Settings</h3>
-                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Manage essential site settings and branding.</p>
+                                    <h3 className="text-3xl font-bold text-slate-900 uppercase tracking-tight">Storefront & Hero Settings</h3>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Manage branding and your home page hero section.</p>
                                 </div>
+
+                                {/* Integrated Hero Settings */}
+                                <div className="bg-indigo-50/20 p-10 rounded-[3rem] border border-indigo-100/20 space-y-10">
+                                    <div className="flex items-center gap-4">
+                                        <Layout className="w-6 h-6 text-indigo-600" />
+                                        <h4 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Hero Slides Management</h4>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={addSlide}
+                                            className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-indigo-600 shadow-xl shadow-indigo-100"
+                                        >
+                                            <Plus className="w-5 h-5" /> New Slide
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-10">
+                                        {formData.heroSlides.map((slide, index) => (
+                                            <div key={index} className="bg-white border border-slate-100 rounded-[3rem] p-10 relative group transition-all hover:shadow-2xl hover:shadow-indigo-50/30">
+                                                {/* Slide info summary for embedded view */}
+                                                <div className="mb-6 flex items-center justify-between border-b border-slate-50 pb-4">
+                                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Slide #{index + 1}: {slide.title || 'Untitled'}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button type="button" onClick={() => moveSlide(index, 'up')} disabled={index === 0} className="p-2 text-slate-400 hover:text-indigo-600 disabled:opacity-20 transition-colors"><ChevronUp className="w-4 h-4" /></button>
+                                                        <button type="button" onClick={() => moveSlide(index, 'down')} disabled={index === formData.heroSlides.length - 1} className="p-2 text-slate-400 hover:text-indigo-600 disabled:opacity-20 transition-colors"><ChevronDown className="w-4 h-4" /></button>
+                                                        <button type="button" onClick={() => removeSlide(index)} className="p-2 text-rose-400 hover:text-rose-600 ml-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                    <div className="space-y-4">
+                                                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Title</label>
+                                                        <input type="text" className="w-full p-4 bg-slate-50 border-none rounded-xl text-xs font-bold" value={slide.title} onChange={e => { const s = [...formData.heroSlides]; s[index].title = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Subtitle</label>
+                                                        <input type="text" className="w-full p-4 bg-slate-50 border-none rounded-xl text-xs font-bold" value={slide.subtitle} onChange={e => { const s = [...formData.heroSlides]; s[index].subtitle = e.target.value; setFormData({ ...formData, heroSlides: s }); }} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] font-medium text-slate-400 italic text-center">Tip: For full image management and detailed descriptions, use the "Hero Content" tab directly.</p>
+                                </div>
+
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                                     <div className="lg:col-span-4 space-y-10">
                                         <div className="space-y-4">

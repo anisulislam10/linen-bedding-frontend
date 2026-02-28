@@ -164,7 +164,7 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
       <ScrollToTop />
       <header className={headerClass}>
         {headerConfig.announcementEnabled && (
-          <div className="bg-sage text-white py-2 relative h-10 overflow-hidden flex items-center justify-center text-[10px] md:text-xs font-medium tracking-widest uppercase transition-all">
+          <div className="bg-sage text-white py-1.5 relative h-8 overflow-hidden flex items-center justify-center text-[10px] md:text-xs font-medium tracking-widest uppercase transition-all">
             {announcements.map((text, idx) => (
               <div
                 key={idx}
@@ -176,75 +176,80 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
             ))}
           </div>
         )}
-        <div className={`w-full max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between ${isScrolled || !isHome ? 'py-4' : 'py-6'}`}>
+        <div className={`w-full max-w-7xl mx-auto px-6 lg:px-12 flex items-center min-h-[70px] md:min-h-[90px] ${isScrolled || !isHome ? 'py-3' : 'py-4'}`}>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-primary"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+          {/* Column 1: Mobile Menu & Desktop Nav */}
+          <div className="flex-1 flex items-center justify-start">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-primary"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center space-x-10">
-            <Link to="/" className={linkClass}>Home</Link>
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              <Link to="/" className={linkClass}>Home</Link>
 
-            {/* Categories Dropdown */}
-            <div className="relative group/categories h-full flex items-center">
-              <button className={`flex items-center gap-1.5 ${linkClass} group-hover/categories:text-sage`}>
-                Categories <ChevronDown className="h-4 w-4 transition-transform duration-300 group-hover/categories:rotate-180" />
-              </button>
+              {/* Categories Dropdown */}
+              <div className="relative group/categories h-full flex items-center">
+                <button className={`flex items-center gap-1.5 ${linkClass} group-hover/categories:text-sage`}>
+                  Categories <ChevronDown className="h-4 w-4 transition-transform duration-300 group-hover/categories:rotate-180" />
+                </button>
 
-              <div className="absolute top-full -left-4 pt-4 opacity-0 translate-y-2 invisible group-hover/categories:opacity-100 group-hover/categories:visible group-hover/categories:translate-y-0 transition-all duration-300 z-[200]">
-                <div className="bg-white border border-secondary/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] py-4 min-w-[240px] overflow-hidden backdrop-blur-sm">
-                  <div className="px-6 pb-2 mb-2 border-b border-secondary/5">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/40 text-left block">
-                      Browse Collections
-                    </span>
+                <div className="absolute top-full -left-4 pt-4 opacity-0 translate-y-2 invisible group-hover/categories:opacity-100 group-hover/categories:visible group-hover/categories:translate-y-0 transition-all duration-300 z-[200]">
+                  <div className="bg-white border border-secondary/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] py-4 min-w-[240px] overflow-hidden backdrop-blur-sm">
+                    <div className="px-6 pb-2 mb-2 border-b border-secondary/5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary/40 text-left block">
+                        Browse Collections
+                      </span>
+                    </div>
+                    {categories.filter(c => c !== 'All').map((cat) => (
+                      <Link
+                        key={cat}
+                        to={`/products?category=${cat}`}
+                        className="flex items-center justify-between px-6 py-3 text-sm text-primary/80 hover:text-sage hover:bg-sage/5 transition-all text-left font-medium group/item"
+                      >
+                        <span>{cat}</span>
+                        <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
+                      </Link>
+                    ))}
                   </div>
-                  {categories.filter(c => c !== 'All').map((cat) => (
-                    <Link
-                      key={cat}
-                      to={`/products?category=${cat}`}
-                      className="flex items-center justify-between px-6 py-3 text-sm text-primary/80 hover:text-sage hover:bg-sage/5 transition-all text-left font-medium group/item"
-                    >
-                      <span>{cat}</span>
-                      <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0" />
-                    </Link>
-                  ))}
                 </div>
               </div>
-            </div>
 
-            <Link to="/products" className={linkClass}>Shop</Link>
-            <Link to="/about" className={linkClass}>Our Story</Link>
-          </nav>
+              <Link to="/products" className={linkClass}>Shop</Link>
+              <Link to="/about" className={linkClass}>Our Story</Link>
+            </nav>
+          </div>
 
-          {/* Logo */}
-          <Link
-            to="/"
-            className="text-2xl md:text-3xl font-serif font-bold tracking-tight absolute left-1/2 -translate-x-1/2 text-primary flex items-center justify-center"
-          >
-            {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt={siteSettings.siteName} className="h-20 w-auto object-contain" />
-            ) : (
-              <span>{siteSettings.siteName}</span>
-            )}
-          </Link>
+          {/* Column 2: Logo (Centered) */}
+          <div className="flex-shrink-0 flex items-center justify-center px-4">
+            <Link
+              to="/"
+              className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-primary flex items-center justify-center transition-all duration-300 transform"
+            >
+              {siteSettings.logoUrl ? (
+                <img src={siteSettings.logoUrl} alt={siteSettings.siteName} className="h-14 sm:h-16 md:h-24 w-auto object-contain" />
+              ) : (
+                <span>{siteSettings.siteName}</span>
+              )}
+            </Link>
+          </div>
 
-          {/* Icons */}
-          <div className="flex items-center space-x-5">
+          {/* Column 3: Icons */}
+          <div className="flex-1 flex items-center justify-end space-x-4 md:space-x-6">
             <button
               onClick={() => setSearchOpen(true)}
               className="text-primary hover:text-sage transition-colors duration-300"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-5 w-5 md:h-6 md:w-6" />
             </button>
 
             <button
               onClick={() => setTrackingModalOpen(true)}
-              className="hidden sm:block text-xs font-bold uppercase tracking-widest text-primary hover:text-sage transition-colors duration-300"
+              className="hidden sm:block text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary hover:text-sage transition-colors duration-300"
             >
               Track
             </button>
@@ -252,14 +257,13 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
             {isLoggedIn ? (
               <div className="relative group">
                 <Link to="/profile" className="flex items-center gap-2 text-primary hover:text-sage transition-colors">
-                  <User className="h-5 w-5" />
+                  <User className="h-5 w-5 md:h-6 md:w-6" />
                 </Link>
-                {/* Simple Dropdown on Hover could go here, keeping it clean for now */}
               </div>
             ) : (
               <button
                 onClick={() => setShowLogin(true)}
-                className="hidden sm:block text-sm font-medium text-primary hover:text-sage transition-colors"
+                className="hidden sm:block text-xs md:text-sm font-bold uppercase tracking-widest text-primary hover:text-sage transition-colors"
               >
                 Login
               </button>
@@ -269,9 +273,9 @@ const Header: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
               onClick={onCartOpen}
               className="relative group flex items-center gap-2 text-primary hover:text-sage transition-colors"
             >
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-sage text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                <span className="absolute -top-2 -right-2 bg-sage text-white text-[9px] font-bold w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center shadow-sm">
                   {totalItems}
                 </span>
               )}

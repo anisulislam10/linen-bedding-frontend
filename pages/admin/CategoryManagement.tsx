@@ -15,6 +15,7 @@ const CategoryManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<any>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -40,6 +41,11 @@ const CategoryManagement: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const filteredCategories = categories.filter(c =>
+        (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.slug || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const handleOpenModal = (cat: any = null) => {
         setFile(null);
@@ -134,6 +140,18 @@ const CategoryManagement: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Categories List */}
                 <div className="lg:col-span-3 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-slate-50">
+                        <div className="relative w-full md:w-80">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search categories..."
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold"
+                            />
+                        </div>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
@@ -145,51 +163,59 @@ const CategoryManagement: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {categories.map((c) => (
-                                    <tr key={c._id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-4">
-                                            <div className="flex items-center space-x-4">
-                                                <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
-                                                    <Tag className="w-5 h-5" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-bold text-slate-900 text-sm">{c.name}</h4>
-                                                    <p className="text-xs text-slate-400 line-clamp-1">{c.description || 'No definition set'}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-4">
-                                            {c.parentCategory ? (
-                                                <span className="text-[9px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase tracking-widest">
-                                                    Sub / {typeof c.parentCategory === 'string' ? 'Parent' : c.parentCategory.name}
-                                                </span>
-                                            ) : (
-                                                <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 uppercase tracking-widest">
-                                                    Main Category
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-8 py-4 font-mono text-[10px] text-slate-400">
-                                            {c.slug || c._id.slice(-6).toUpperCase()}
-                                        </td>
-                                        <td className="px-8 py-4">
-                                            <div className="flex items-center justify-end space-x-2">
-                                                <button
-                                                    onClick={() => handleOpenModal(c)}
-                                                    className="p-2 text-slate-400 hover:text-indigo-600 transition-all"
-                                                >
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(c._id)}
-                                                    className="p-2 text-slate-400 hover:text-rose-500 transition-all"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
+                                {filteredCategories.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="px-8 py-20 text-center">
+                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No categories found.</p>
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredCategories.map((c) => (
+                                        <tr key={c._id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-8 py-4">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
+                                                        <Tag className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-slate-900 text-sm">{c.name}</h4>
+                                                        <p className="text-xs text-slate-400 line-clamp-1">{c.description || 'No definition set'}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-4">
+                                                {c.parentCategory ? (
+                                                    <span className="text-[9px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase tracking-widest">
+                                                        Sub / {typeof c.parentCategory === 'string' ? 'Parent' : c.parentCategory.name}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 uppercase tracking-widest">
+                                                        Main Category
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-4 font-mono text-[10px] text-slate-400">
+                                                {c.slug || c._id.slice(-6).toUpperCase()}
+                                            </td>
+                                            <td className="px-8 py-4">
+                                                <div className="flex items-center justify-end space-x-2">
+                                                    <button
+                                                        onClick={() => handleOpenModal(c)}
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 transition-all"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(c._id)}
+                                                        className="p-2 text-slate-400 hover:text-rose-500 transition-all"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>

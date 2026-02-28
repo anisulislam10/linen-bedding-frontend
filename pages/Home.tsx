@@ -30,10 +30,15 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsData, categoriesData, contentData] = await Promise.all([
-          productService.getProducts({ limit: 8 }),
-          productService.getCategories(),
-          contentService.getContent('home_page')
+        setLoading(true);
+        // Step 1: Fetch CMS content first to get the dynamic limit
+        const contentData = await contentService.getContent('home_page');
+        const limit = contentData?.latestAdditions?.count || 8;
+
+        // Step 2: Fetch products and categories
+        const [productsData, categoriesData] = await Promise.all([
+          productService.getProducts({ limit }),
+          productService.getCategories()
         ]);
 
         // Handle Products
@@ -155,7 +160,7 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {products.slice(0, 4).map(product => (
+            {products.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

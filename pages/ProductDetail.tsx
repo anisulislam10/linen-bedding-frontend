@@ -79,7 +79,7 @@ const ProductDetail: React.FC = () => {
   if (loading) return <Loader fullPage color="#4A5D4E" />;
 
   if (error || !product) return (
-    <div className="max-w-7xl mx-auto px-4 py-24 text-center">
+    <div className="min-h-screen bg-[#eff0f5] py-4 font-sans text-[#212121]">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">{error || 'Product not found'}</h2>
       <Link to="/products" className="text-indigo-600 font-bold hover:underline">Back to Products</Link>
     </div>
@@ -87,7 +87,7 @@ const ProductDetail: React.FC = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-10 pt-4 md:pt-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">
         <Link to="/" className="hover:text-gray-900 transition-colors">Home</Link>

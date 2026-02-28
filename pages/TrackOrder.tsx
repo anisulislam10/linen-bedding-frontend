@@ -29,7 +29,7 @@ const TrackOrder: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white pt-32 pb-24 px-6 lg:px-12">
+        <div className="min-h-screen bg-white pb-20 px-6 lg:px-12">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-20 text-center">
                     <span className="text-[10px] font-bold uppercase tracking-[0.8em] text-indigo-600 mb-6 block">Order Tracking</span>

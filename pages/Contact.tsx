@@ -20,7 +20,7 @@ const Contact: React.FC = () => {
     return (
         <div className="bg-sand min-h-screen">
             {/* Hero Section */}
-            <section className="bg-sage/10 py-20 px-6">
+            <section className="bg-sage/10 py-12 px-6">
                 <div className="container mx-auto max-w-4xl text-center">
                     <h1 className="text-5xl md:text-6xl font-serif text-primary mb-6">
                         Get in Touch

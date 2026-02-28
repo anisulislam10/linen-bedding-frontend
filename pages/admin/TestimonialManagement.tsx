@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Plus,
+    Search,
     Edit2,
     Trash2,
     Loader2,
@@ -12,6 +13,7 @@ import { testimonialService, Testimonial } from '../../services/testimonialServi
 
 const TestimonialManagement: React.FC = () => {
     const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
@@ -41,6 +43,12 @@ const TestimonialManagement: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const filteredTestimonials = testimonials.filter(t =>
+        (t.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.content || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.company || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const handleOpenModal = (testimonial: Testimonial | null = null) => {
         if (testimonial) {
@@ -120,6 +128,19 @@ const TestimonialManagement: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-50">
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search testimonials..."
+                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all font-bold"
+                        />
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
@@ -132,66 +153,74 @@ const TestimonialManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {testimonials.map((testimonial) => (
-                                <tr key={testimonial._id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center space-x-4">
-                                            {testimonial.avatar && (
-                                                <img
-                                                    src={testimonial.avatar}
-                                                    alt={testimonial.name}
-                                                    className="w-10 h-10 rounded-full object-cover"
-                                                />
-                                            )}
-                                            <div>
-                                                <h4 className="font-bold text-slate-900 text-sm">{testimonial.name}</h4>
-                                                <p className="text-xs text-slate-400 line-clamp-1">
-                                                    {testimonial.role}{testimonial.company && `, ${testimonial.company}`}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <p className="text-sm text-slate-600 line-clamp-2 max-w-md">
-                                            {testimonial.content}
-                                        </p>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex gap-0.5">
-                                            {Array.from({ length: testimonial.rating }).map((_, i) => (
-                                                <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        {testimonial.isActive ? (
-                                            <span className="text-[9px] font-black text-green-600 bg-green-50 px-2 py-1 rounded border border-green-100 uppercase tracking-widest">
-                                                Active
-                                            </span>
-                                        ) : (
-                                            <span className="text-[9px] font-black text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase tracking-widest">
-                                                Inactive
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center justify-end space-x-2">
-                                            <button
-                                                onClick={() => handleOpenModal(testimonial)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-all"
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(testimonial._id)}
-                                                className="p-2 text-slate-400 hover:text-rose-500 transition-all"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                            {filteredTestimonials.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-8 py-20 text-center">
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No testimonials found.</p>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredTestimonials.map((testimonial) => (
+                                    <tr key={testimonial._id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center space-x-4">
+                                                {testimonial.avatar && (
+                                                    <img
+                                                        src={testimonial.avatar}
+                                                        alt={testimonial.name}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                )}
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900 text-sm">{testimonial.name}</h4>
+                                                    <p className="text-xs text-slate-400 line-clamp-1">
+                                                        {testimonial.role}{testimonial.company && `, ${testimonial.company}`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <p className="text-sm text-slate-600 line-clamp-2 max-w-md">
+                                                {testimonial.content}
+                                            </p>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex gap-0.5">
+                                                {Array.from({ length: testimonial.rating }).map((_, i) => (
+                                                    <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            {testimonial.isActive ? (
+                                                <span className="text-[9px] font-black text-green-600 bg-green-50 px-2 py-1 rounded border border-green-100 uppercase tracking-widest">
+                                                    Active
+                                                </span>
+                                            ) : (
+                                                <span className="text-[9px] font-black text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase tracking-widest">
+                                                    Inactive
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center justify-end space-x-2">
+                                                <button
+                                                    onClick={() => handleOpenModal(testimonial)}
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 transition-all"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(testimonial._id)}
+                                                    className="p-2 text-slate-400 hover:text-rose-500 transition-all"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

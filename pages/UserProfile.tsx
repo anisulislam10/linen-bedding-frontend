@@ -206,7 +206,7 @@ const UserProfile: React.FC = () => {
 
   if (!isLoggedIn) {
     return (
-      <div className="max-w-md mx-auto py-12 px-4">
+      <div className="max-w-md mx-auto py-6 px-4">
         <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-xl">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center uppercase tracking-tighter">Login</h2>
           <p className="text-gray-400 mb-8 text-center text-xs font-bold uppercase tracking-widest leading-relaxed">Sign in to your account to manage your orders and addresses.</p>
@@ -254,7 +254,7 @@ const UserProfile: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Sidebar */}
         <aside className="lg:w-80">

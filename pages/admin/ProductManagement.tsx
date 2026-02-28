@@ -20,6 +20,7 @@ const ProductManagement: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchProducts();
@@ -100,6 +101,8 @@ const ProductManagement: React.FC = () => {
                             type="text"
                             placeholder="Filter by ID or Name..."
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="flex items-center space-x-4">
@@ -121,56 +124,61 @@ const ProductManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {products.map((p) => (
-                                <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-14 h-14 bg-slate-100 rounded-2xl overflow-hidden flex-shrink-0">
-                                                <img src={p.images?.[0]?.url || p.image} alt={p.name} className="w-full h-full object-cover" />
+                            {products
+                                .filter(p =>
+                                    (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (p._id || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map((p) => (
+                                    <tr key={p._id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center space-x-4">
+                                                <div className="w-14 h-14 bg-slate-100 rounded-2xl overflow-hidden flex-shrink-0">
+                                                    <img src={p.images?.[0]?.url || p.image} alt={p.name} className="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1 flex items-center gap-2">
+                                                        {p.name}
+                                                        {p.isHero && (
+                                                            <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Hero</span>
+                                                        )}
+                                                    </h4>
+                                                    <span className="text-[10px] font-mono text-slate-400">#{p._id.slice(-8).toUpperCase()}</span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-bold text-slate-900 text-sm line-clamp-1 flex items-center gap-2">
-                                                    {p.name}
-                                                    {p.isHero && (
-                                                        <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Hero</span>
-                                                    )}
-                                                </h4>
-                                                <span className="text-[10px] font-mono text-slate-400">#{p._id.slice(-8).toUpperCase()}</span>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                                                {typeof p.category === 'string' ? p.category : p.category?.name}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-4 font-bold text-slate-900 text-sm">
+                                            ${p.price.toFixed(2)}
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center space-x-2">
+                                                <div className={`w-2 h-2 rounded-full ${p.stock > 10 ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                                                <span className="text-sm font-bold text-slate-600">{p.stock} Units</span>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
-                                            {typeof p.category === 'string' ? p.category : p.category?.name}
-                                        </span>
-                                    </td>
-                                    <td className="px-8 py-4 font-bold text-slate-900 text-sm">
-                                        ${p.price.toFixed(2)}
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center space-x-2">
-                                            <div className={`w-2 h-2 rounded-full ${p.stock > 10 ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                                            <span className="text-sm font-bold text-slate-600">{p.stock} Units</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <div className="flex items-center justify-end space-x-2">
-                                            <button
-                                                onClick={() => handleOpenModal(p)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-all"
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(p._id)}
-                                                className="p-2 text-slate-400 hover:text-rose-500 transition-all"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex items-center justify-end space-x-2">
+                                                <button
+                                                    onClick={() => handleOpenModal(p)}
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 transition-all"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(p._id)}
+                                                    className="p-2 text-slate-400 hover:text-rose-500 transition-all"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
