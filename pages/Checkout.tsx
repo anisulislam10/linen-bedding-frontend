@@ -13,6 +13,7 @@ import { userService } from '../services/userService';
 import Loader from '../components/common/Loader';
 import { GatewaySetting } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 // We'll initialize stripePromise dynamically inside the component
 let stripePromise: Promise<any> | null = null;
@@ -103,7 +104,7 @@ const CheckoutForm: React.FC = () => {
         shippingAddress: finalAddress,
         paymentMethod: selectedGateway === 'stripe' ? 'Stripe' : 'COD' as any,
         itemsPrice: subtotal,
-        taxPrice: tax,
+        taxPrice: 0,
         shippingPrice: shipping,
         totalPrice: total
       };
@@ -117,6 +118,10 @@ const CheckoutForm: React.FC = () => {
         setIsProcessing(false);
       } else {
         // Handle COD or others
+        toast.success('Order placed successfully! Pay on delivery.', {
+          duration: 5000,
+          icon: '📦',
+        });
         navigate('/order-confirmation', { state: { orderId: order._id } });
         clearCart();
       }
@@ -144,6 +149,10 @@ const CheckoutForm: React.FC = () => {
 
       sessionStorage.removeItem('pendingOrderId');
       clearCart();
+      toast.success('Payment successful! Your order is being processed.', {
+        duration: 6000,
+        icon: '✅',
+      });
       navigate('/order-confirmation', { state: { orderId } });
     } catch (err: any) {
       setError(err.message || 'Payment failed');
@@ -357,10 +366,6 @@ const CheckoutForm: React.FC = () => {
                   <span className={`font-bold ${shipping === 0 ? 'text-green-600' : 'text-gray-800'}`}>
                     {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
                   </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Estimated Tax</span>
-                  <span className="font-bold text-gray-800">${tax.toFixed(2)}</span>
                 </div>
               </div>
 

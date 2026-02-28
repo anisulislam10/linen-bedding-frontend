@@ -206,7 +206,7 @@ const UserProfile: React.FC = () => {
 
   if (!isLoggedIn) {
     return (
-      <div className="max-w-md mx-auto py-24 px-4">
+      <div className="max-w-md mx-auto py-12 px-4">
         <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-xl">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center uppercase tracking-tighter">Login</h2>
           <p className="text-gray-400 mb-8 text-center text-xs font-bold uppercase tracking-widest leading-relaxed">Sign in to your account to manage your orders and addresses.</p>

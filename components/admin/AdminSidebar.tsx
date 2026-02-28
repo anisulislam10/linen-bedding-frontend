@@ -14,7 +14,8 @@ import {
     MessageCircle,
     RotateCcw,
     CreditCard,
-    Settings
+    Settings,
+    Truck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -30,6 +31,7 @@ const AdminSidebar: React.FC = () => {
         { title: 'Categories', path: '/admin/categories', icon: Tag },
         { title: 'Reviews', path: '/admin/reviews', icon: MessageSquare },
         { title: 'Testimonials', path: '/admin/testimonials', icon: MessageCircle },
+        { title: 'Shipping Settings', path: '/admin/shipping', icon: Truck },
         { title: 'Settings', path: '/admin/settings', icon: Settings },
         { title: 'Wishlist', path: '/admin/wishlist', icon: Heart },
         { title: 'Ad Management', path: '/admin/ads', icon: Megaphone },

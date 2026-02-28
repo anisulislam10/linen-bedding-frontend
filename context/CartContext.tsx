@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CartItem, Product } from '../types';
 import { cartService } from '../services/cartService';
+import { shippingService, ShippingSettings } from '../services/shippingService';
 import { useAuth } from './AuthContext';
 
 interface CartContextType {
@@ -35,6 +36,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [shippingSettings, setShippingSettings] = useState<ShippingSettings | null>(null);
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
@@ -75,6 +77,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('cart', JSON.stringify(cart));
     }
   }, [cart, isLoggedIn]);
+
+  // Fetch shipping settings
+  useEffect(() => {
+    const fetchShipping = async () => {
+      try {
+        const settings = await shippingService.getSettings();
+        setShippingSettings(settings);
+      } catch (err) {
+        console.error('Failed to fetch shipping settings:', err);
+      }
+    };
+    fetchShipping();
+  }, []);
 
   const addToCart = useCallback(async (product: Product, quantity: number = 1) => {
     try {
@@ -197,9 +212,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return acc + activePrice * item.quantity;
   }, 0);
   const totalItems = cart.reduce((acc, item) => acc + (item.product ? item.quantity : 0), 0);
-  const tax = subtotal * 0.1;
-  const shipping = subtotal > 100 || subtotal === 0 ? 0 : 15;
-  const total = subtotal + tax + shipping;
+  const tax = 0; // Tax removed as per user request
+  const shippingFee = shippingSettings?.shippingFee ?? 15;
+  const freeThreshold = shippingSettings?.freeShippingThreshold ?? 100;
+  const shipping = subtotal > freeThreshold || subtotal === 0 ? 0 : shippingFee;
+  const total = subtotal + shipping;
 
   return (
     <CartContext.Provider value={{

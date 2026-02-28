@@ -21,7 +21,7 @@ const SettingsOverview: React.FC = () => {
     const tabs = [
         { id: 'general', label: 'General Settings', icon: Globe, description: 'Site identity, SEO keywords, and global meta-data.' },
         { id: 'payments', label: 'Payment Methods', icon: CreditCard, description: 'Payment gateways, Stripe keys, and COD management.' },
-        { id: 'flash', label: 'Marketing & Events', icon: Zap, description: 'Flash sale coordination and event triggers.' },
+        { id: 'flash', label: 'Flash Sales', icon: Zap, description: 'Flash sale coordination and event triggers.' },
         { id: 'footer', label: 'Footer Management', icon: LayoutTemplate, description: 'Footer text, social media links, and copyright settings.' }
     ] as const;
 

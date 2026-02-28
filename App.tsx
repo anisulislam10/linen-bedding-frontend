@@ -29,6 +29,7 @@ import WishlistManagement from './pages/admin/WishlistManagement';
 import TestimonialManagement from './pages/admin/TestimonialManagement';
 import ReturnManagement from './pages/admin/ReturnManagement';
 import SettingsOverview from './pages/admin/SettingsOverview';
+import ShippingSettings from './pages/admin/ShippingSettings';
 import AdminLogin from './pages/admin/AdminLogin';
 import TrackOrder from './pages/TrackOrder';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -68,7 +69,7 @@ const AppContent = () => {
       <AdDisplayManager />
       <CookieConsent />
 
-      <main className="flex-grow">
+      <main className={`flex-grow ${!isAdminRoute ? 'pt-36 md:pt-44' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductListing />} />
@@ -112,6 +113,7 @@ const AppContent = () => {
               <Route path="/admin/ads" element={<AdManagement />} />
               <Route path="/admin/wishlist" element={<WishlistManagement />} />
               <Route path="/admin/testimonials" element={<TestimonialManagement />} />
+              <Route path="/admin/shipping" element={<ShippingSettings />} />
             </Route>
           </Route>
         </Routes>
