@@ -198,10 +198,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isLoggedIn, removeFromCart]);
 
-  const clearCart = useCallback(() => {
-    setCart([]);
-    localStorage.removeItem('cart');
-  }, []);
+  const clearCart = useCallback(async () => {
+    try {
+      if (isLoggedIn) {
+        await cartService.clearCart();
+      }
+      setCart([]);
+      localStorage.removeItem('cart');
+    } catch (err) {
+      console.error('Failed to clear cart:', err);
+    }
+  }, [isLoggedIn]);
 
   // Calculate totals
   const subtotal = cart.reduce((acc, item) => {
