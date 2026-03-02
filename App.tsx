@@ -69,7 +69,7 @@ const AppContent = () => {
       <AdDisplayManager />
       <CookieConsent />
 
-      <main className={`flex-grow bg-sand ${!isAdminRoute ? 'pt-28 md:pt-32 lg:pt-36' : ''}`}>
+      <main className={`flex-grow bg-sand ${!isAdminRoute ? 'pt-28 md:pt-32 lg:pt-38' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductListing />} />

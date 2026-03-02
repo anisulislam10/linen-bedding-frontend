@@ -87,7 +87,7 @@ const ProductDetail: React.FC = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-10">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">
         <Link to="/" className="hover:text-gray-900 transition-colors">Home</Link>

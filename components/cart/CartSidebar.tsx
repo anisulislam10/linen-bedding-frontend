@@ -15,7 +15,7 @@ const CartSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
         className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-opacity"
         onClick={onClose}
       />
-      <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[60] flex flex-col transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[60] flex flex-col transform transition-transform duration-300 ease-out pt-28 md:pt-32 lg:pt-38 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
