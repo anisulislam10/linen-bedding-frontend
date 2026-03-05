@@ -168,7 +168,7 @@ const CheckoutForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#eff0f5] py-4 font-sans text-[#212121]">
+    <div className="min-h-screen bg-[#eff0f5] pt-10 pb-4 md:pt-16 md:pb-8 font-sans text-[#212121]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Progress Stepper - Daraz Style */}
