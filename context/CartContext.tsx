@@ -48,12 +48,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       const backendCart = await cartService.getCart();
-      const formattedCart: CartItem[] = backendCart.items.map(item => ({
-        _id: item._id,
-        product: item.product,
-        quantity: item.quantity,
-        price: item.price,
-      }));
+      const formattedCart: CartItem[] = backendCart.items
+        .filter(item => item.product !== null)
+        .map(item => ({
+          _id: item._id,
+          product: item.product,
+          quantity: item.quantity,
+          price: item.price,
+        }));
       setCart(formattedCart);
       localStorage.removeItem('cart'); // Clear guest cart
     } catch (err: any) {
@@ -99,12 +101,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isLoggedIn) {
         // Add to backend
         const backendCart = await cartService.addToCart(product._id, quantity);
-        const formattedCart: CartItem[] = backendCart.items.map(item => ({
-          _id: item._id,
-          product: item.product,
-          quantity: item.quantity,
-          price: item.price,
-        }));
+        const formattedCart: CartItem[] = backendCart.items
+          .filter(item => item.product !== null)
+          .map(item => ({
+            _id: item._id,
+            product: item.product,
+            quantity: item.quantity,
+            price: item.price,
+          }));
         setCart(formattedCart);
       } else {
         // Add to local storage
@@ -174,12 +178,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (isLoggedIn) {
         const backendCart = await cartService.updateCartItem(itemId, quantity);
-        const formattedCart: CartItem[] = backendCart.items.map(item => ({
-          _id: item._id,
-          product: item.product,
-          quantity: item.quantity,
-          price: item.price,
-        }));
+        const formattedCart: CartItem[] = backendCart.items
+          .filter(item => item.product !== null)
+          .map(item => ({
+            _id: item._id,
+            product: item.product,
+            quantity: item.quantity,
+            price: item.price,
+          }));
         setCart(formattedCart);
       } else {
         setCart(prev =>

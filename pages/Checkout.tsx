@@ -96,11 +96,13 @@ const CheckoutForm: React.FC = () => {
 
       // 1. Create order
       const orderData = {
-        items: cart.map(item => ({
-          product: item.product._id,
-          quantity: item.quantity,
-          price: item.price
-        })),
+        items: cart
+          .filter(item => item.product)
+          .map(item => ({
+            product: item.product._id,
+            quantity: item.quantity,
+            price: item.price
+          })),
         shippingAddress: finalAddress,
         paymentMethod: selectedGateway === 'stripe' ? 'Stripe' : 'COD' as any,
         itemsPrice: subtotal,
